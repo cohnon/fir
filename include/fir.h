@@ -21,7 +21,7 @@ FirBuilder *fir_mod_get_builder(FirModule *module);
 // == FirFunc ================
 FirFunc *fir_func_create(FirModule *module, FirSym name);
 
-void fir_func_set_signature(FirFunc *func, FirType ret_type, FirType *param_types, size_t param_types_len);
+void fir_func_set_signature(FirFunc *func, FirType ret_type, size_t n_params, FirType *param_types);
 
 FirBlock *fir_func_get_entry_blk(FirFunc *func);
 
@@ -78,29 +78,32 @@ FirType fir_ty_bool(void);
 // == FirSym =================
 typedef struct FirSym {
     const char *ptr;
-    size_t     len;
+    uint16_t   len;
+    uint16_t   unique_id;
 } FirSym;
 
 FirSym fir_sym_none(void);
 #define fir_sym_lit(c_str) (FirSym){ .ptr = c_str, .len = sizeof(c_str) - 1 }
 FirSym fir_sym_slc(char *c_str, size_t len);
 
-#define fir_sym_fmt(sym) (int)sym.len, sym.ptr
+_Bool fir_sym_eq(FirSym a, FirSym b);
+
+#define fir_sym_fmt(sym) (int)(sym).len, (sym).ptr
 
 // == FirBuilder =============
 void firb_set_insert_point(FirBuilder *firb, FirBlock *blk);
 
 // FirBuilder > instructions
+// memory
+void firb_mov(FirBuilder *firb, FirVal dst, FirVal src);
 // arithmetic
 FirVal firb_add(FirBuilder *firb, FirType type, FirVal lhs, FirVal rhs);
-// memory
-void firb_set(FirBuilder *firb, FirVal dst, FirVal src);
 // terminators
-typedef struct FirIf {
+typedef struct FirIfCtrl {
     FirBlock *then_blk;
     FirBlock *else_blk;
     FirBlock *join_blk;
-} FirIf;
-FirIf firb_if(FirBuilder *firb, FirVal *cond);
+} FirIfCtrl;
+FirIfCtrl firb_if(FirBuilder *firb, FirVal cond);
 
 #endif

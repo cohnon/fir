@@ -1,5 +1,6 @@
 #include "fir.h"
 #include "fir_priv.h"
+#include "symbol.h"
 #include "dynarr.h"
 #include "arena.h"
 
@@ -35,18 +36,19 @@ FirFunc *fir_func_create(FirModule *module, FirSym name) {
 
     dynarr_init(&func->param_types, 16);
     dynarr_init(&func->blks,        32);
+    dynarr_init(&func->instrs,      32);
 
     fir_blk_create_named(func, fir_sym_lit("entry"));
 
     return func;
 }
 
-void fir_func_set_signature(FirFunc *func, FirType ret_type, FirType *param_types, size_t param_types_len) {
+void fir_func_set_signature(FirFunc *func, FirType ret_type, size_t n_params, FirType *param_types) {
     assert(func != NULL);
 
     func->ret_type = ret_type;
 
-    for (size_t i = 0; i < param_types_len; i += 1) {
+    for (size_t i = 0; i < n_params; i += 1) {
         dynarr_push(&func->param_types, &param_types[i]);
     }
 }
@@ -65,6 +67,8 @@ FirBlock *fir_blk_create(FirFunc *func) {
 #include <stdio.h>
 FirBlock *fir_blk_create_named(FirFunc *func, FirSym name) {
     assert(func != NULL);
+
+    fir_sym_set_unique_blk_idx(&name, func);
 
     FirBlock *blk = fir_arena_alloc_T(&func->parent->arena, FirBlock);
     dynarr_push(&func->blks, &blk);

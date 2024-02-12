@@ -3,6 +3,7 @@
 
 #include "fir.h"
 #include "dynarr.h"
+#include <stdbool.h>
 
 
 //
@@ -31,6 +32,15 @@ typedef enum FirInstrKind {
 
 } FirInstrKind;
 
+typedef struct FirCallArg {
+    FirType type;
+    FirVal  val;
+} FirCallArg;
+
+typedef struct FirCall {
+    DynArr(FirCallArg) args;
+} FirCall;
+
 typedef struct FirPhiArg {
     FirVal   *val;
     FirBlock *block;
@@ -51,18 +61,19 @@ typedef struct FirInstr {
 
     // extended instructions
     union {
-        FirPhi phi;
+        FirCall call;
+        FirPhi  phi;
     };
 } FirInstr;
 
 // == terminator ============
 typedef enum FirTermiKind {
-    Fir_Jmp,
-    Fir_If,
+    FirTermi_Jmp,
+    FirTermi_If,
 } FirTermiKind;
 
 typedef struct FirTermiIf {
-    FirVal   *cond;
+    FirVal   cond;
     FirBlock *then_blk;
     FirBlock *else_blk;
 } FirTermiIf;
@@ -75,5 +86,7 @@ typedef struct FirTermi {
         FirTermiIf _if;
     };
 } FirTermi;
+
+bool fir_instr_creates_new_register(FirInstr *instr);
 
 #endif

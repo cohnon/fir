@@ -5,9 +5,9 @@ CC = gcc
 FLAGS = -g -std=c11 -Wall -Wextra -pedantic -Iinclude
 
 .Phony: all
-all: fir
+all: build/fir
 
-fir: test/main.c $(OFILES)
+build/fir: test/main.c $(OFILES)
 	$(CC) $(FLAGS) $^ -o $@
 
 build/%.o: src/%.c

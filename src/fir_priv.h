@@ -37,6 +37,7 @@ typedef struct FirFunc {
     FirType           ret_type;
 
     DynArr(FirBlock*) blks;
+    DynArr(FirInstr*) instrs;
 } FirFunc;
 
 // == blocks ================
