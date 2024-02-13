@@ -5,16 +5,21 @@
 
 int main(void) {
 
+    // create module
     FirModule *module = fir_mod_create();
 
-    FirFunc *func = fir_func_create(module, fir_sym_lit("main"));
+    // create main function
+    FirType params[] = { fir_ty_ptr() };
 
-    FirType params[] = { fir_ty_int(32) };
-    fir_func_set_signature(func, fir_ty_void(), 1, params);
+    FirFunc *func = fir_func_create(module, fir_sym_lit("main"), fir_ty_void(), params, 1);
 
+    // create other function
+    FirType other_params[] = { fir_ty_int(32), fir_ty_int(32) };
+    FirFunc *other_func = fir_func_create(module, fir_sym_lit("other"), fir_ty_int(32), other_params, 2);
+
+    // builder
     FirBuilder *firb = fir_mod_get_builder(module);
-
-    firb_set_insert_point(firb, fir_func_get_entry_blk(func));
+    firb_init_func(firb, func);
 
     // bin op
     FirVal sum = firb_add(firb,
@@ -33,8 +38,22 @@ int main(void) {
     firb_mov(firb, sum, fir_imm_int(module, 5, true));
 
     firb_set_insert_point(firb, if_ctrl.join_blk);
-    firb_add(firb, fir_ty_int(32), fir_imm_int(module, 100, false), sum);
+    FirVal sum2 = firb_add(firb, fir_ty_int(32), fir_imm_int(module, 100, false), sum);
 
+    // func call
+    FirVal args[] = {
+        sum,
+        sum2,
+    };
+
+    firb_call(firb, other_func, args, 2);
+
+    firb_ret_void(firb);
+
+    // verify
+    fir_verify_module(module);
+
+    // debug
     fird_print_func(func);
 
     return 0;

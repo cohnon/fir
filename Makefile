@@ -16,5 +16,5 @@ build/%.o: src/%.c
 
 .Phony: clean
 clean:
-	rm -r fir build
+	rm -r build
 

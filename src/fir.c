@@ -25,7 +25,7 @@ FirBuilder *fir_mod_get_builder(FirModule *module) {
     return &module->builder;
 }
 
-FirFunc *fir_func_create(FirModule *module, FirSym name) {
+FirFunc *fir_func_create(FirModule *module, FirSym name, FirType ret_ty, FirType *param_types, size_t n_params) {
     assert(module != NULL);
 
     FirFunc *func = fir_arena_alloc_T(&module->arena, FirFunc);
@@ -38,19 +38,12 @@ FirFunc *fir_func_create(FirModule *module, FirSym name) {
     dynarr_init(&func->blks,        32);
     dynarr_init(&func->instrs,      32);
 
-    fir_blk_create_named(func, fir_sym_lit("entry"));
-
-    return func;
-}
-
-void fir_func_set_signature(FirFunc *func, FirType ret_type, size_t n_params, FirType *param_types) {
-    assert(func != NULL);
-
-    func->ret_type = ret_type;
-
+    func->ret_type = ret_ty;
     for (size_t i = 0; i < n_params; i += 1) {
         dynarr_push(&func->param_types, &param_types[i]);
     }
+
+    return func;
 }
 
 FirBlock *fir_func_get_entry_blk(FirFunc *func) {
@@ -64,7 +57,7 @@ FirBlock *fir_blk_create(FirFunc *func) {
 
     return fir_blk_create_named(func, fir_sym_none());
 }
-#include <stdio.h>
+
 FirBlock *fir_blk_create_named(FirFunc *func, FirSym name) {
     assert(func != NULL);
 
@@ -120,3 +113,5 @@ FirVal fir_imm_int(FirModule *module, unsigned long long n, bool is_signed) {
     return val;
 }
 
+void fir_verify_module(FirModule *module) {
+}

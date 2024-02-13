@@ -56,6 +56,7 @@ typedef struct FirBlock {
 typedef enum FirImmKind {
     FirImm_Int,
 } FirImmKind;
+
 typedef struct FirImm {
     FirImmKind kind;
     union {
@@ -65,6 +66,16 @@ typedef struct FirImm {
         } integer;
     };
 } FirImm;
+
+typedef enum FirGlobKind {
+    FirGlob_Func,
+} FirGlobKind;
+
+typedef struct FirGlob {
+    FirGlobKind kind;
+    FirType     type;
+    FirSym      name;
+} FirGlob;
 
 FirVal fir_val_instr(FirInstr *instr);
 

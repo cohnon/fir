@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <assert.h>
 
 
 typedef struct FirModule  FirModule;
@@ -19,9 +20,7 @@ FirModule *fir_mod_create(void);
 FirBuilder *fir_mod_get_builder(FirModule *module);
 
 // == FirFunc ================
-FirFunc *fir_func_create(FirModule *module, FirSym name);
-
-void fir_func_set_signature(FirFunc *func, FirType ret_type, size_t n_params, FirType *param_types);
+FirFunc *fir_func_create(FirModule *module, FirSym name, FirType ret_ty, FirType *param_types, size_t n_params);
 
 FirBlock *fir_func_get_entry_blk(FirFunc *func);
 
@@ -34,6 +33,7 @@ FirFunc *fir_blk_get_parent(FirBlock *blk);
 // == FirVal =================
 typedef struct FirInstr FirInstr;
 typedef struct FirImm   FirImm;
+typedef struct FirGlob  FirGlob;
 
 typedef enum FirValKind {
     FirVal_Invalid,
@@ -48,6 +48,7 @@ typedef struct FirVal {
     union {
         FirInstr *reg;
         FirImm   *imm;
+        FirGlob  *glob;
     };
 } FirVal;
 
@@ -62,18 +63,21 @@ typedef enum FirTypeKind {
     // TODO: increase to i128 (maybe more?) using software arithmetic
     FirType_Int,
 
+    // a type that points to an address in memory (e.g. functions, globals)
+    FirType_Ptr,
+
 } FirTypeKind;
 
 typedef struct FirType {
-    FirTypeKind kind;
-    union {
-        uint8_t bits: 6;
-    };
+    uint16_t kind: 4;
+    uint16_t data: 12;
 } FirType;
+static_assert(sizeof(FirType) == 2, "expected 'FirType' to be of size 2");
 
-FirType fir_ty_int(size_t bits);
-FirType fir_ty_void(void);
-FirType fir_ty_bool(void);
+#define fir_ty_int(bits) (FirType){ FirType_Int, bits }
+#define fir_ty_void()    (FirType){ FirType_Int, 0    }
+#define fir_ty_bool()    (FirType){ FirType_Int, 1    }
+#define fir_ty_ptr()     (FirType){ FirType_Ptr, 0    }
 
 // == FirSym =================
 typedef struct FirSym {
@@ -91,6 +95,7 @@ _Bool fir_sym_eq(FirSym a, FirSym b);
 #define fir_sym_fmt(sym) (int)(sym).len, (sym).ptr
 
 // == FirBuilder =============
+void firb_init_func(FirBuilder *firb, FirFunc *func);
 void firb_set_insert_point(FirBuilder *firb, FirBlock *blk);
 
 // FirBuilder > instructions
@@ -98,12 +103,21 @@ void firb_set_insert_point(FirBuilder *firb, FirBlock *blk);
 void firb_mov(FirBuilder *firb, FirVal dst, FirVal src);
 // arithmetic
 FirVal firb_add(FirBuilder *firb, FirType type, FirVal lhs, FirVal rhs);
+// misc
+FirVal firb_call(FirBuilder *firb, FirFunc *target, FirVal *args, size_t n_args);
+FirVal firb_icall(FirBuilder *firb, FirVal target, FirVal *args, size_t n_args);
 // terminators
+void firb_jmp(FirBuilder *firb, FirBlock *to_blk);
 typedef struct FirIfCtrl {
     FirBlock *then_blk;
     FirBlock *else_blk;
     FirBlock *join_blk;
 } FirIfCtrl;
 FirIfCtrl firb_if(FirBuilder *firb, FirVal cond);
+void firb_ret(FirBuilder *firb, FirVal ret_val);
+void firb_ret_void(FirBuilder *firb);
+
+// == passes =================
+void fir_verify_module(FirModule *module);
 
 #endif

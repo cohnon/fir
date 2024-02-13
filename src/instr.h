@@ -38,7 +38,9 @@ typedef struct FirCallArg {
 } FirCallArg;
 
 typedef struct FirCall {
+    FirSym             name;
     DynArr(FirCallArg) args;
+    FirType            ret_type;
 } FirCall;
 
 typedef struct FirPhiArg {
@@ -68,9 +70,14 @@ typedef struct FirInstr {
 
 // == terminator ============
 typedef enum FirTermiKind {
-    FirTermi_Jmp,
+    FirTermi_Goto,
     FirTermi_If,
+    FirTermi_Ret,
 } FirTermiKind;
+
+typedef struct FirTermiGoto {
+    FirBlock *blk;
+} FirTermiGoto;
 
 typedef struct FirTermiIf {
     FirVal   cond;
@@ -78,12 +85,17 @@ typedef struct FirTermiIf {
     FirBlock *else_blk;
 } FirTermiIf;
 
+typedef struct FirTermiRet {
+    FirVal val;
+} FirTermiRet;
+
 typedef struct FirTermi {
     FirTermiKind kind;
 
     union {
-        FirBlock  *jmp;
-        FirTermiIf _if;
+        FirTermiGoto _goto;
+        FirTermiIf   _if;
+        FirTermiRet  ret;
     };
 } FirTermi;
 

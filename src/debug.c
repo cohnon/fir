@@ -7,17 +7,22 @@
 static void fird_print_type(FirType *type) {
     switch (type->kind) {
     case FirType_Int:
-    if (type->bits == 0) {
-        printf("void");
-    } else if (type->bits == 1) {
-        printf("bool");
-    } else {
-        printf("i%d", type->bits);
-    }
+        if (type->data == 0) {
+            printf("void");
+        } else if (type->data == 1) {
+            printf("bool");
+        } else {
+            printf("i%d", type->data);
+        }
 
-    break;
+        break;
 
-    default: printf("fird_print_type: unhandled type (%d)\n", type->kind);
+    case FirType_Ptr:
+        printf("ptr");
+
+        break;
+
+    default: printf("<unhandled type>");
     }
 }
 
@@ -65,7 +70,7 @@ static void fird_print_args(FirInstr *instr) {
 }
 
 static void fird_print_instr(FirInstr *instr) {
-    printf("  ");
+    printf("    ");
 
     if (fir_instr_creates_new_register(instr)) {
         fird_print_register(instr);
@@ -88,6 +93,24 @@ static void fird_print_instr(FirInstr *instr) {
         
         break;
 
+    case FirInstr_Call:
+        printf("call ");
+        fird_print_type(&instr->call.ret_type);
+        printf(" @%.*s(", fir_sym_fmt(instr->call.name));
+        dynarr_foreach(instr->call.args, i) {
+            FirCallArg *arg = dynarr_get_ref(&instr->call.args, i);
+            fird_print_type(&arg->type);
+            printf(" ");
+            fird_print_val(&arg->val);
+
+            if (i < instr->call.args.len - 1) {
+                printf(", ");
+            }
+        }
+        printf(")");
+
+        break;
+
     default:
         printf("<unknown instruction>");
     }
@@ -96,9 +119,21 @@ static void fird_print_instr(FirInstr *instr) {
 }
 
 static void fird_print_termi(FirTermi *termi) {
-    printf("  ");
+    printf("    ");
+
+    // TODO: termi should never be NULL
+    if (termi == NULL) {
+        printf("<invalid terminator>\n");
+        return;
+    }
 
     switch (termi->kind) {
+    case FirTermi_Goto:
+        printf("goto ");
+        fird_print_label(termi->_goto.blk);
+
+        break;
+
     case FirTermi_If:
         printf("if ");
         fird_print_val(&termi->_if.cond);
@@ -106,6 +141,14 @@ static void fird_print_termi(FirTermi *termi) {
         fird_print_label(termi->_if.then_blk);
         printf(" ");
         fird_print_label(termi->_if.else_blk);
+
+        break;
+
+    case FirTermi_Ret:
+        printf("ret ");
+        if (termi->ret.val.kind != FirVal_Invalid) {
+            fird_print_val(&termi->ret.val);
+        }
 
         break;
 
@@ -117,7 +160,7 @@ static void fird_print_termi(FirTermi *termi) {
 }
 
 void fird_print_blk(FirBlock *blk) {
-    printf("\n");
+    printf("  ");
     fird_print_label(blk);
     printf(":\n");
 
@@ -125,10 +168,9 @@ void fird_print_blk(FirBlock *blk) {
         fird_print_instr(dynarr_get(&blk->instrs, i));
     }
 
-    // TODO: require terminators
-    if (blk->termi != NULL) {
-        fird_print_termi(blk->termi);
-    }
+    fird_print_termi(blk->termi);
+
+    printf("\n");
 }
 
 void fird_print_func(FirFunc *func) {
