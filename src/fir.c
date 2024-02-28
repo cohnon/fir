@@ -1,16 +1,21 @@
 #include "fir.h"
 #include "fir_priv.h"
-#include "symbol.h"
-#include "dynarr.h"
+
 #include "arena.h"
+#include "dynarr.h"
+#include "symbol.h"
+#include "target/c.h"
 
 #include <assert.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 FirModule *fir_mod_create(void) {
     FirModule *module = malloc(sizeof(FirModule));
+    assert(module != NULL);
 
     dynarr_init(&module->funcs, 16);
     module->builder = firb_create(module);
@@ -23,6 +28,28 @@ FirBuilder *fir_mod_get_builder(FirModule *module) {
     assert(module != NULL);
 
     return &module->builder;
+}
+
+FirTarget *fir_target_create(FirModule *module, FirTargetKind kind) {
+    assert(module != NULL);
+
+    FirTarget *target = malloc(sizeof(FirTarget));
+    assert(target != NULL);
+
+    target->kind = kind;
+
+    target->module = module;
+    target->built  = false;
+
+    target->output = sb_init(128);
+
+    return target;
+}
+
+void fir_target_build(FirTarget *target) {
+    switch (target->kind) {
+    case FirTarget_C: target_c(target); break;
+    }
 }
 
 FirFunc *fir_func_create(FirModule *module, FirSym name, FirType ret_ty, FirType *param_types, size_t n_params) {
@@ -104,7 +131,7 @@ FirVal fir_imm_int(FirModule *module, unsigned long long n, bool is_signed) {
     val.kind = FirVal_Imm;
 
     FirImm *imm = fir_arena_alloc_T(&module->arena, FirImm);
-    imm->kind = FirImm_Int;
+    imm->type.kind = FirType_Int;
     imm->integer.n = n;
     imm->integer.is_signed = is_signed;
 

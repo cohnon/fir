@@ -2,6 +2,7 @@
 #include "debug.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 
 int main(void) {
 
@@ -9,9 +10,9 @@ int main(void) {
     FirModule *module = fir_mod_create();
 
     // create main function
-    FirType params[] = { fir_ty_ptr() };
+    FirType params[] = { fir_ty_void() };
 
-    FirFunc *func = fir_func_create(module, fir_sym_lit("main"), fir_ty_void(), params, 1);
+    FirFunc *func = fir_func_create(module, fir_sym_lit("main"), fir_ty_int(32), params, 1);
 
     // create other function
     FirType other_params[] = { fir_ty_int(32), fir_ty_int(32) };
@@ -53,8 +54,17 @@ int main(void) {
     // verify
     fir_verify_module(module);
 
+    // build target
+    FirTarget *target = fir_target_create(module, FirTarget_C);
+    fir_target_build(target);
+
     // debug
+    printf("== ir ==\n");
     fird_print_func(func);
+    printf("\n");
+
+    printf("== target ==\n");
+    fird_print_target(target);
 
     return 0;
 }

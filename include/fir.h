@@ -7,6 +7,7 @@
 
 
 typedef struct FirModule  FirModule;
+typedef struct FirTarget  FirTarget;
 typedef struct FirFunc    FirFunc;
 typedef struct FirBlock   FirBlock;
 typedef struct FirVal     FirVal;
@@ -18,6 +19,16 @@ typedef struct FirBuilder FirBuilder;
 FirModule *fir_mod_create(void);
 
 FirBuilder *fir_mod_get_builder(FirModule *module);
+
+// == FirTarget ==============
+typedef enum FirTargetKind {
+    FirTarget_C,
+} FirTargetKind;
+
+FirTarget *fir_target_create(FirModule *module, FirTargetKind kind);
+void fir_target_build(FirTarget *target);
+char *fir_target_get_str_buf(FirTarget *target);
+void fir_target_to_file(const char *path);
 
 // == FirFunc ================
 FirFunc *fir_func_create(FirModule *module, FirSym name, FirType ret_ty, FirType *param_types, size_t n_params);

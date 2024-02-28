@@ -2,9 +2,11 @@
 #define FIR_PRIV_H
 
 #include "fir.h"
-#include "instr.h"
-#include "dynarr.h"
+
 #include "arena.h"
+#include "dynarr.h"
+#include "instr.h"
+#include "string_builder.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -27,6 +29,16 @@ typedef struct FirModule {
     FirBuilder       builder;
     FirArena         arena;
 } FirModule;
+
+// == target ================
+typedef struct FirTarget {
+    FirTargetKind kind;
+
+    FirModule     *module;
+    bool          built;
+
+    StringBuilder output;
+} FirTarget;
 
 // == functions =============
 typedef struct FirFunc {
@@ -53,12 +65,9 @@ typedef struct FirBlock {
 } FirBlock;
 
 // == fir values ============
-typedef enum FirImmKind {
-    FirImm_Int,
-} FirImmKind;
-
 typedef struct FirImm {
-    FirImmKind kind;
+    FirType type;
+
     union {
         struct {
             uint64_t n;

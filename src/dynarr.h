@@ -28,6 +28,6 @@ void *dynarr_priv_add(void *arr, size_t size);
 #define dynarr_get_ref(arr, idx) (__typeof__( (arr)->ptr ))dynarr_priv_get(arr, sizeof(__typeof__(*(arr)->ptr)), idx)
 void *dynarr_priv_get(void *arr, size_t size, size_t idx);
 
-#define dynarr_foreach(arr, i) for (size_t i = 0; i < arr.len; i += 1)
+#define dynarr_foreach(arr, i) for (size_t i = 0; i < (arr).len; i += 1)
 
 #endif

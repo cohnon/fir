@@ -46,12 +46,12 @@ static void fird_print_val(FirVal *val) {
         break;
 
     case FirVal_Imm:
-        switch (val->imm->kind) {
-        case FirImm_Int:
+        switch (val->imm->type.kind) {
+        case FirType_Int:
             if (val->imm->integer.is_signed) {
                 printf("-");
             }
-            printf("%ld", val->imm->integer.n);
+            printf("%llu", val->imm->integer.n);
 
             break;
         }
@@ -198,3 +198,10 @@ void fird_print_func(FirFunc *func) {
         fird_print_blk(dynarr_get(&func->blks, i));
     }
 }
+
+void fird_print_target(FirTarget *target) {
+    assert(target->built && "cannot print unbuilt target");
+
+    printf("%.*s", (int)target->output.len, target->output.buf);
+}
+
