@@ -47,9 +47,24 @@ FirTarget *fir_target_create(FirModule *module, FirTargetKind kind) {
 }
 
 void fir_target_build(FirTarget *target) {
+    assert(target != NULL);
+    assert(!target->built);
+
     switch (target->kind) {
     case FirTarget_C: target_c(target); break;
     }
+}
+
+void fir_target_to_file(FirTarget *target, const char *path) {
+    assert(target != NULL);
+    assert(path != NULL);
+
+    FILE *out_file = fopen(path, "wb");
+    assert(out_file != NULL);
+
+    fwrite(target->output.buf, target->output.len, 1, out_file);
+
+    fclose(out_file);
 }
 
 FirFunc *fir_func_create(FirModule *module, FirSym name, FirType ret_ty, FirType *param_types, size_t n_params) {
@@ -140,5 +155,32 @@ FirVal fir_imm_int(FirModule *module, unsigned long long n, bool is_signed) {
     return val;
 }
 
-void fir_verify_module(FirModule *module) {
+static bool fir_verify_blk(FirBlock *blk) {
+    if (blk->termi == NULL) {
+        return false;
+    }
+
+    return true;
+}
+
+static bool fir_verify_func(FirFunc *func) {
+    dynarr_foreach(func->blks, i) {
+        FirBlock *blk = dynarr_get(&func->blks, i);
+        if (!fir_verify_blk(blk)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool fir_verify_module(FirModule *module) {
+    dynarr_foreach(module->funcs, i) {
+        FirFunc *func = dynarr_get(&module->funcs, i);
+        if (!fir_verify_func(func)) {
+            return false;
+        }
+    }
+
+    return true;
 }

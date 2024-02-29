@@ -14,9 +14,9 @@ int main(void) {
 
     FirFunc *func = fir_func_create(module, fir_sym_lit("main"), fir_ty_int(32), params, 1);
 
-    // create other function
-    FirType other_params[] = { fir_ty_int(32), fir_ty_int(32) };
-    FirFunc *other_func = fir_func_create(module, fir_sym_lit("other"), fir_ty_int(32), other_params, 2);
+    // create add function
+    FirType add_params[] = { fir_ty_int(32), fir_ty_int(32) };
+    FirFunc *add_func = fir_func_create(module, fir_sym_lit("add"), fir_ty_int(32), add_params, 2);
 
     // builder
     FirBuilder *firb = fir_mod_get_builder(module);
@@ -47,16 +47,24 @@ int main(void) {
         sum2,
     };
 
-    firb_call(firb, other_func, args, 2);
+    firb_call(firb, add_func, args, 2);
 
-    firb_ret_void(firb);
+    FirVal ret_val = fir_imm_int(module, 0, false);
+    firb_ret(firb, ret_val);
 
     // verify
-    fir_verify_module(module);
+    bool valid = fir_verify_module(module);
+    if (!valid) {
+        printf("uh oh: module is in an invalid state\n");
+
+        return 1;
+    }
 
     // build target
     FirTarget *target = fir_target_create(module, FirTarget_C);
     fir_target_build(target);
+    
+    fir_target_to_file(target, "ir.c");
 
     // debug
     printf("== ir ==\n");

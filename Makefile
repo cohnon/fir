@@ -2,7 +2,7 @@ CFILES = $(wildcard src/*.c src/*/*.c)
 OFILES = $(patsubst src/%.c, build/%.o, $(CFILES))
 
 CC = gcc
-FLAGS = -g -std=c11 -Wall -Wextra -pedantic -Iinclude -Isrc
+FLAGS = -g -std=c11 -Wall -Wextra -pedantic -Werror -Iinclude -Isrc
 
 .Phony: all
 all: build/fir

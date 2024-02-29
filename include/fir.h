@@ -28,7 +28,7 @@ typedef enum FirTargetKind {
 FirTarget *fir_target_create(FirModule *module, FirTargetKind kind);
 void fir_target_build(FirTarget *target);
 char *fir_target_get_str_buf(FirTarget *target);
-void fir_target_to_file(const char *path);
+void fir_target_to_file(FirTarget *target, const char *path);
 
 // == FirFunc ================
 FirFunc *fir_func_create(FirModule *module, FirSym name, FirType ret_ty, FirType *param_types, size_t n_params);
@@ -103,7 +103,8 @@ FirSym fir_sym_slc(char *c_str, size_t len);
 
 _Bool fir_sym_eq(FirSym a, FirSym b);
 
-#define fir_sym_fmt(sym) (int)(sym).len, (sym).ptr
+#define fir_sym_fmt(sym) (int)(sym).len, (sym).ptr, (sym).unique_id
+#define fir_sym_fmt_raw(sym) (int)(sym).len, (sym).ptr
 
 // == FirBuilder =============
 void firb_init_func(FirBuilder *firb, FirFunc *func);
@@ -129,6 +130,6 @@ void firb_ret(FirBuilder *firb, FirVal ret_val);
 void firb_ret_void(FirBuilder *firb);
 
 // == passes =================
-void fir_verify_module(FirModule *module);
+_Bool fir_verify_module(FirModule *module);
 
 #endif

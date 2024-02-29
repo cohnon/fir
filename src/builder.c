@@ -105,6 +105,10 @@ FirVal firb_call(FirBuilder *firb, FirFunc *target, FirVal *args, size_t n_args)
 }
 
 FirVal firb_icall(FirBuilder *firb, FirVal target, FirVal *args, size_t n_args) {
+    (void)firb;
+    (void)target;
+    (void)args;
+    (void)n_args;
     return fir_val_invalid();
 }
 
