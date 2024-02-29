@@ -90,6 +90,8 @@ static_assert(sizeof(FirType) == 2, "expected 'FirType' to be of size 2");
 #define fir_ty_bool()    (FirType){ FirType_Int, 1    }
 #define fir_ty_ptr()     (FirType){ FirType_Ptr, 0    }
 
+#define fir_is_void(ty) ((ty).kind == FirType_Int && (ty).data == 0)
+
 // == FirSym =================
 typedef struct FirSym {
     const char *ptr;
@@ -113,6 +115,7 @@ void firb_set_insert_point(FirBuilder *firb, FirBlock *blk);
 // FirBuilder > instructions
 // memory
 void firb_mov(FirBuilder *firb, FirVal dst, FirVal src);
+FirVal firb_param(FirBuilder *firb, size_t n);
 // arithmetic
 FirVal firb_add(FirBuilder *firb, FirType type, FirVal lhs, FirVal rhs);
 // misc

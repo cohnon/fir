@@ -10,9 +10,7 @@ int main(void) {
     FirModule *module = fir_mod_create();
 
     // create main function
-    FirType params[] = { fir_ty_void() };
-
-    FirFunc *func = fir_func_create(module, fir_sym_lit("main"), fir_ty_int(32), params, 1);
+    FirFunc *func = fir_func_create(module, fir_sym_lit("main"), fir_ty_int(32), NULL, 0);
 
     // create add function
     FirType add_params[] = { fir_ty_int(32), fir_ty_int(32) };
@@ -49,8 +47,16 @@ int main(void) {
 
     firb_call(firb, add_func, args, 2);
 
+    // ret
     FirVal ret_val = fir_imm_int(module, 0, false);
     firb_ret(firb, ret_val);
+
+    // add func
+    firb_init_func(firb, add_func);
+    FirVal param_a = firb_param(firb, 0);
+    FirVal param_b = firb_param(firb, 1);
+    FirVal add_sum = firb_add(firb, fir_ty_int(32), param_a, param_b);
+    firb_ret(firb, add_sum);
 
     // verify
     bool valid = fir_verify_module(module);
@@ -68,7 +74,7 @@ int main(void) {
 
     // debug
     printf("== ir ==\n");
-    fird_print_func(func);
+    fird_print_module(module);
     printf("\n");
 
     printf("== target ==\n");

@@ -75,6 +75,13 @@ static void cg_reg(FirTargetCtx *ctx, FirInstr *reg) {
     sb_printf(ctx->output, "reg_%.*s%d", fir_sym_fmt(reg->name));
 }
 
+static void cg_instr_assignment(FirTargetCtx *ctx, FirInstr *instr) {
+    cg_type(ctx, instr->type);
+    sb_print_lit(ctx->output, " ");
+    cg_reg(ctx, instr);
+    sb_print_lit(ctx->output, " = ");
+}
+
 static void cg_val(FirTargetCtx *ctx, FirVal *val) {
     assert(ctx != NULL);
     assert(val != NULL);
@@ -101,16 +108,6 @@ static void cg_instr(FirTargetCtx *ctx, FirInstr *instr) {
     sb_print_lit(ctx->output, "\t");
 
     switch (instr->kind) {
-    case FirInstr_Add:
-        cg_type(ctx, instr->type);
-        sb_print_lit(ctx->output, " ");
-        cg_reg(ctx, instr);
-        sb_printf(ctx->output, " = ");
-        cg_val(ctx, &instr->args[0]);
-        sb_print_lit(ctx->output, " + ");
-        cg_val(ctx, &instr->args[1]);
-        break;
-
     case FirInstr_Mov:
         assert(instr->args[0].kind == FirVal_Reg);
         cg_reg(ctx, instr->args[0].reg);
@@ -118,7 +115,21 @@ static void cg_instr(FirTargetCtx *ctx, FirInstr *instr) {
         cg_val(ctx, &instr->args[1]);
         break;
 
+    case FirInstr_Param:
+        cg_instr_assignment(ctx, instr);
+        sb_printf(ctx->output, "param_%zu", instr->param);
+        
+        break;
+
+    case FirInstr_Add:
+        cg_instr_assignment(ctx, instr);
+        cg_val(ctx, &instr->args[0]);
+        sb_print_lit(ctx->output, " + ");
+        cg_val(ctx, &instr->args[1]);
+        break;
+
     case FirInstr_Call:
+        cg_instr_assignment(ctx, instr);
         sb_printf(ctx->output, "%.*s(", fir_sym_fmt_raw(instr->call.name));
         dynarr_foreach(instr->call.args, i) {
             FirCallArg arg = dynarr_get(&instr->call.args, i);
@@ -200,9 +211,14 @@ static void cg_func_sig(FirTargetCtx *ctx, FirFunc *func) {
     cg_type(ctx, func->ret_type);
     sb_printf(ctx->output, " %.*s(", fir_sym_fmt_raw(func->name));
 
+    if (func->param_types.len == 0) {
+        sb_printf(ctx->output, "void");
+    }
+
     dynarr_foreach(func->param_types, i) {
         FirType param_type = dynarr_get(&func->param_types, i);
         cg_type(ctx, param_type);
+        sb_printf(ctx->output, " param_%zu", i);
 
         if (i < func->param_types.len - 1) {
             sb_print_lit(ctx->output, ", ");

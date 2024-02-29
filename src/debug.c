@@ -83,6 +83,10 @@ static void fird_print_instr(FirInstr *instr) {
         fird_print_val(&instr->args[1]);
 
         break;
+    
+    case FirInstr_Param:
+        printf("param %zu", instr->param);
+        break;
 
     case FirInstr_Add:
         printf("add ");
@@ -95,7 +99,7 @@ static void fird_print_instr(FirInstr *instr) {
     case FirInstr_Call:
         printf("call ");
         fird_print_type(&instr->call.ret_type);
-        printf(" @%.*s%d(", fir_sym_fmt(instr->call.name));
+        printf(" @%.*s(", fir_sym_fmt_raw(instr->call.name));
         dynarr_foreach(instr->call.args, i) {
             FirCallArg *arg = dynarr_get_ref(&instr->call.args, i);
             fird_print_type(&arg->type);
@@ -173,7 +177,7 @@ void fird_print_blk(FirBlock *blk) {
 }
 
 void fird_print_func(FirFunc *func) {
-    printf("func @%.*s%d(", fir_sym_fmt(func->name));
+    printf("func @%.*s(", fir_sym_fmt_raw(func->name));
 
     if (func->param_types.len > 0) {
         printf(" ");
@@ -195,6 +199,12 @@ void fird_print_func(FirFunc *func) {
 
     dynarr_foreach(func->blks, i) {
         fird_print_blk(dynarr_get(&func->blks, i));
+    }
+}
+
+void fird_print_module(FirModule *module) {
+    dynarr_foreach(module->funcs, i) {
+        fird_print_func(dynarr_get(&module->funcs, i));
     }
 }
 

@@ -34,38 +34,52 @@ void firb_set_insert_point(FirBuilder *firb, FirBlock *blk) {
     firb->cur_blk = blk;
 }
 
+// instructions
+static FirInstr *insert_instr(FirBuilder *firb, FirInstrKind kind, bool named) {
+    assert(firb != NULL);
+
+    FirInstr *instr = fir_arena_alloc_T(&firb->module->arena, FirInstr);
+    instr->kind = kind;
+    instr->name = fir_sym_none();
+    if (named) {
+        fir_sym_set_unique_instr_idx(&instr->name, firb->cur_func);
+    }
+
+    dynarr_push(&firb->cur_func->instrs, &instr);
+    dynarr_push(&firb->cur_blk->instrs, &instr);
+
+
+    return instr;
+}
+
 void firb_mov(FirBuilder *firb, FirVal dst, FirVal src) {
     assert(firb != NULL);
 
-    FirFunc *func = firb->cur_func;
-    FirBlock *blk = firb->cur_blk;
-
-    FirInstr *instr = fir_arena_alloc_T(&func->parent->arena, FirInstr);
-    dynarr_push(&func->instrs, &instr);
-    dynarr_push(&blk->instrs, &instr);
-
-    instr->kind = FirInstr_Mov;
-    instr->name = fir_sym_none();
+    FirInstr *instr = insert_instr(firb, FirInstr_Mov, false);
 
     instr->args[0] = dst;
     instr->args[1] = src;
 }
 
+FirVal firb_param(FirBuilder *firb, size_t i) {
+    assert(firb != NULL);
+    assert(firb->cur_func->param_types.len > 0);
+    assert(i < firb->cur_func->param_types.len);
+
+    FirInstr *instr = insert_instr(firb, FirInstr_Param, true);
+
+    instr->type = dynarr_get(&firb->cur_func->param_types, i);
+    instr->param = i;
+
+    return fir_val_instr(instr);
+}
+
 FirVal firb_add(FirBuilder *firb, FirType type, FirVal lhs, FirVal rhs) {
     assert(firb != NULL);
+    assert(lhs.kind != FirVal_Invalid);
+    assert(rhs.kind != FirVal_Invalid);
 
-    FirFunc *func = firb->cur_func;
-    FirBlock *blk = firb->cur_blk;
-
-    FirSym name = fir_sym_none();
-    fir_sym_set_unique_instr_idx(&name, func);
-
-    FirInstr *instr = fir_arena_alloc_T(&func->parent->arena, FirInstr);
-    dynarr_push(&func->instrs, &instr);
-    dynarr_push(&blk->instrs, &instr);
-
-    instr->kind = FirInstr_Add;
-    instr->name = name;
+    FirInstr *instr = insert_instr(firb, FirInstr_Add, true);
 
     instr->type = type;
 
@@ -81,21 +95,10 @@ FirVal firb_call(FirBuilder *firb, FirFunc *target, FirVal *args, size_t n_args)
     assert(target != NULL);
     assert(target->param_types.len == n_args);
 
-    FirFunc *func = firb->cur_func;
-    FirBlock *blk = firb->cur_blk;
-
-    FirSym name = fir_sym_none();
-    fir_sym_set_unique_instr_idx(&name, func);
-
-    FirInstr *instr = fir_arena_alloc_T(&func->parent->arena, FirInstr);
-    dynarr_push(&func->instrs, &instr);
-    dynarr_push(&blk->instrs, &instr);
-
-    instr->kind = FirInstr_Call;
-    instr->name = name;
+    FirInstr *instr = insert_instr(firb, FirInstr_Call, true);
 
     instr->call.name = target->name;
-    instr->call.ret_type = target->ret_type;
+    instr->type = target->ret_type;
     for (size_t i = 0; i < n_args; i += 1) {
         FirCallArg arg = { dynarr_get(&target->param_types, i), args[i] };
         dynarr_push(&instr->call.args, &arg);
@@ -112,18 +115,23 @@ FirVal firb_icall(FirBuilder *firb, FirVal target, FirVal *args, size_t n_args) 
     return fir_val_invalid();
 }
 
+// terminators
+static FirTermi *insert_termi(FirBuilder *firb, FirTermiKind kind) {
+    FirTermi *termi = fir_arena_alloc_T(&firb->module->arena, FirTermi);
+    termi->kind = kind;
+
+    firb->cur_blk->termi = termi;
+
+    return termi;
+}
+
 void firb_goto(FirBuilder *firb, FirBlock *to_blk) {
     assert(firb != NULL);
     assert(to_blk != NULL);
     assert(firb->cur_blk->termi == NULL);
 
-    FirFunc *func = firb->cur_func;
-    FirBlock *blk = firb->cur_blk;
+    FirTermi *termi = insert_termi(firb, FirTermi_Goto);
 
-    FirTermi *termi = fir_arena_alloc_T(&func->parent->arena, FirTermi);
-    blk->termi = termi;
-
-    termi->kind = FirTermi_Goto;
     termi->_goto.blk = to_blk;
 }
 
@@ -131,13 +139,11 @@ FirIfCtrl firb_if(FirBuilder *firb, FirVal cond) {
     assert(firb != NULL);
     assert(firb->cur_blk->termi == NULL);
 
+    FirTermi *termi = insert_termi(firb, FirTermi_If);
+
     FirFunc *func = firb->cur_func;
     FirBlock *blk = firb->cur_blk;
-    
-    FirTermi *termi = fir_arena_alloc_T(&func->parent->arena, FirTermi);
-    blk->termi = termi;
 
-    termi->kind = FirTermi_If;
     termi->_if.cond = cond;
     termi->_if.then_blk = fir_blk_create_named(func, fir_sym_lit("if_then"));
     termi->_if.else_blk = fir_blk_create_named(func, fir_sym_lit("if_else"));
@@ -163,13 +169,8 @@ void firb_ret(FirBuilder *firb, FirVal ret_val) {
     assert(firb != NULL);
     assert(firb->cur_blk->termi == NULL);
 
-    FirFunc *func = firb->cur_func;
-    FirBlock *blk = firb->cur_blk;
+    FirTermi *termi = insert_termi(firb, FirTermi_Ret);
 
-    FirTermi *termi = fir_arena_alloc_T(&func->parent->arena, FirTermi);
-    blk->termi = termi;
-
-    termi->kind = FirTermi_Ret;
     termi->ret.val = ret_val;
 }
 

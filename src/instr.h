@@ -22,6 +22,7 @@ typedef enum FirInstrKind {
 
     // memory
     FirInstr_Mov,       // <arg0> = <arg1>
+    FirInstr_Param,     // %rx = param <param_i>
     FirInstr_Phi,       // %rx = phi( <blk0> <val0>, <blk1> <val1>, ... )
 
     // arithmetic
@@ -40,7 +41,6 @@ typedef struct FirCallArg {
 typedef struct FirCall {
     FirSym             name;
     DynArr(FirCallArg) args;
-    FirType            ret_type;
 } FirCall;
 
 typedef struct FirPhiArg {
@@ -65,6 +65,7 @@ typedef struct FirInstr {
     union {
         FirCall call;
         FirPhi  phi;
+        size_t  param;
     };
 } FirInstr;
 

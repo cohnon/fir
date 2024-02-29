@@ -82,6 +82,8 @@ FirFunc *fir_func_create(FirModule *module, FirSym name, FirType ret_ty, FirType
 
     func->ret_type = ret_ty;
     for (size_t i = 0; i < n_params; i += 1) {
+        assert(!fir_is_void(param_types[i]));
+
         dynarr_push(&func->param_types, &param_types[i]);
     }
 
