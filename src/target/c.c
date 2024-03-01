@@ -1,9 +1,9 @@
 #include "c.h"
 
-#include "fir_priv.h"
+#include "../fir_priv.h"
 
-#include "dynarr.h"
-#include "instr.h"
+#include "../dynarr.h"
+#include "../instr.h"
 
 
 typedef struct FirTargetCtx {

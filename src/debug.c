@@ -98,7 +98,7 @@ static void fird_print_instr(FirInstr *instr) {
 
     case FirInstr_Call:
         printf("call ");
-        fird_print_type(&instr->call.ret_type);
+        fird_print_type(&instr->type);
         printf(" @%.*s(", fir_sym_fmt_raw(instr->call.name));
         dynarr_foreach(instr->call.args, i) {
             FirCallArg *arg = dynarr_get_ref(&instr->call.args, i);
