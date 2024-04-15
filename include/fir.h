@@ -109,28 +109,28 @@ _Bool fir_sym_eq(FirSym a, FirSym b);
 #define fir_sym_fmt_raw(sym) (int)(sym).len, (sym).ptr
 
 // == FirBuilder =============
-void firb_init_func(FirBuilder *firb, FirFunc *func);
-void firb_set_insert_point(FirBuilder *firb, FirBlock *blk);
+void fir_builder_init_func(FirBuilder *firb, FirFunc *func);
+void fir_builder_set_insert_point(FirBuilder *firb, FirBlock *blk);
 
 // FirBuilder > instructions
 // memory
-void firb_mov(FirBuilder *firb, FirVal dst, FirVal src);
-FirVal firb_param(FirBuilder *firb, size_t n);
+void fir_instr_mov(FirBuilder *firb, FirVal dst, FirVal src);
+FirVal fir_instr_param(FirBuilder *firb, size_t n);
 // arithmetic
-FirVal firb_add(FirBuilder *firb, FirType type, FirVal lhs, FirVal rhs);
+FirVal fir_instr_add(FirBuilder *firb, FirType type, FirVal lhs, FirVal rhs);
 // misc
-FirVal firb_call(FirBuilder *firb, FirFunc *target, FirVal *args, size_t n_args);
-FirVal firb_icall(FirBuilder *firb, FirVal target, FirVal *args, size_t n_args);
+FirVal fir_instr_call(FirBuilder *firb, FirFunc *target, FirVal *args, size_t n_args);
+FirVal fir_instr_icall(FirBuilder *firb, FirVal target, FirVal *args, size_t n_args);
 // terminators
-void firb_jmp(FirBuilder *firb, FirBlock *to_blk);
+void fir_instr_jmp(FirBuilder *firb, FirBlock *to_blk);
 typedef struct FirIfCtrl {
     FirBlock *then_blk;
     FirBlock *else_blk;
     FirBlock *join_blk;
 } FirIfCtrl;
-FirIfCtrl firb_if(FirBuilder *firb, FirVal cond);
-void firb_ret(FirBuilder *firb, FirVal ret_val);
-void firb_ret_void(FirBuilder *firb);
+FirIfCtrl fir_instr_if(FirBuilder *firb, FirVal cond);
+void fir_instr_ret(FirBuilder *firb, FirVal ret_val);
+void fir_instr_ret_void(FirBuilder *firb);
 
 // == passes =================
 _Bool fir_verify_module(FirModule *module);

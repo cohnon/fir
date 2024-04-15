@@ -20,7 +20,7 @@ typedef struct FirBuilder {
     FirBlock  *cur_blk;
 } FirBuilder;
 
-FirBuilder firb_create(FirModule *module);
+FirBuilder fir_builder_create(FirModule *module);
 
 // == modules ===============
 typedef struct FirModule {

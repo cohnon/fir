@@ -66,7 +66,7 @@ static void cg_imm(FirTargetCtx *ctx, FirImm *imm) {
         if (imm->integer.is_signed) {
             sb_print_lit(ctx->output, "-");
         }
-        sb_printf(ctx->output, "%llu", imm->integer.n);
+        sb_printf(ctx->output, "%ld", imm->integer.n);
         break;
     }
 }

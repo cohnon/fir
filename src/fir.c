@@ -18,7 +18,7 @@ FirModule *fir_mod_create(void) {
     assert(module != NULL);
 
     dynarr_init(&module->funcs, 16);
-    module->builder = firb_create(module);
+    module->builder = fir_builder_create(module);
     module->arena = fir_arena_init(FIR_ARENA_CHUNK_S);
 
     return module;

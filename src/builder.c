@@ -5,7 +5,7 @@
 #include <assert.h>
 
 
-FirBuilder firb_create(FirModule *module) {
+FirBuilder fir_builder_create(FirModule *module) {
     assert(module != NULL);
 
     FirBuilder builder;
@@ -17,16 +17,16 @@ FirBuilder firb_create(FirModule *module) {
     return builder;
 }
 
-void firb_init_func(FirBuilder *firb, FirFunc *func) {
+void fir_builder_init_func(FirBuilder *firb, FirFunc *func) {
     assert(func != NULL);
     assert(func->blks.len == 0);
 
     FirBlock *entry = fir_blk_create_named(func, fir_sym_lit("entry"));
 
-    firb_set_insert_point(firb, entry);
+    fir_builder_set_insert_point(firb, entry);
 }
 
-void firb_set_insert_point(FirBuilder *firb, FirBlock *blk) {
+void fir_builder_set_insert_point(FirBuilder *firb, FirBlock *blk) {
     assert(firb != NULL);
     assert(blk != NULL);
 
@@ -52,7 +52,7 @@ static FirInstr *insert_instr(FirBuilder *firb, FirInstrKind kind, bool named) {
     return instr;
 }
 
-void firb_mov(FirBuilder *firb, FirVal dst, FirVal src) {
+void fir_instr_mov(FirBuilder *firb, FirVal dst, FirVal src) {
     assert(firb != NULL);
 
     FirInstr *instr = insert_instr(firb, FirInstr_Mov, false);
@@ -61,7 +61,7 @@ void firb_mov(FirBuilder *firb, FirVal dst, FirVal src) {
     instr->args[1] = src;
 }
 
-FirVal firb_param(FirBuilder *firb, size_t i) {
+FirVal fir_instr_param(FirBuilder *firb, size_t i) {
     assert(firb != NULL);
     assert(firb->cur_func->param_types.len > 0);
     assert(i < firb->cur_func->param_types.len);
@@ -74,7 +74,7 @@ FirVal firb_param(FirBuilder *firb, size_t i) {
     return fir_val_instr(instr);
 }
 
-FirVal firb_add(FirBuilder *firb, FirType type, FirVal lhs, FirVal rhs) {
+FirVal fir_instr_add(FirBuilder *firb, FirType type, FirVal lhs, FirVal rhs) {
     assert(firb != NULL);
     assert(lhs.kind != FirVal_Invalid);
     assert(rhs.kind != FirVal_Invalid);
@@ -90,7 +90,7 @@ FirVal firb_add(FirBuilder *firb, FirType type, FirVal lhs, FirVal rhs) {
 }
 
 
-FirVal firb_call(FirBuilder *firb, FirFunc *target, FirVal *args, size_t n_args) {
+FirVal fir_instr_call(FirBuilder *firb, FirFunc *target, FirVal *args, size_t n_args) {
     assert(firb != NULL);
     assert(target != NULL);
     assert(target->param_types.len == n_args);
@@ -107,7 +107,7 @@ FirVal firb_call(FirBuilder *firb, FirFunc *target, FirVal *args, size_t n_args)
     return fir_val_instr(instr);
 }
 
-FirVal firb_icall(FirBuilder *firb, FirVal target, FirVal *args, size_t n_args) {
+FirVal fir_instr_icall(FirBuilder *firb, FirVal target, FirVal *args, size_t n_args) {
     (void)firb;
     (void)target;
     (void)args;
@@ -125,7 +125,7 @@ static FirTermi *insert_termi(FirBuilder *firb, FirTermiKind kind) {
     return termi;
 }
 
-void firb_goto(FirBuilder *firb, FirBlock *to_blk) {
+void fir_instr_goto(FirBuilder *firb, FirBlock *to_blk) {
     assert(firb != NULL);
     assert(to_blk != NULL);
     assert(firb->cur_blk->termi == NULL);
@@ -135,7 +135,7 @@ void firb_goto(FirBuilder *firb, FirBlock *to_blk) {
     termi->_goto.blk = to_blk;
 }
 
-FirIfCtrl firb_if(FirBuilder *firb, FirVal cond) {
+FirIfCtrl fir_instr_if(FirBuilder *firb, FirVal cond) {
     assert(firb != NULL);
     assert(firb->cur_blk->termi == NULL);
 
@@ -150,13 +150,13 @@ FirIfCtrl firb_if(FirBuilder *firb, FirVal cond) {
     FirBlock *join_blk  = fir_blk_create_named(func, fir_sym_lit("if_join"));
 
     // goto join
-    firb_set_insert_point(firb, termi->_if.then_blk);
-    firb_goto(firb, join_blk);
+    fir_builder_set_insert_point(firb, termi->_if.then_blk);
+    fir_instr_goto(firb, join_blk);
 
-    firb_set_insert_point(firb, termi->_if.else_blk);
-    firb_goto(firb, join_blk);
+    fir_builder_set_insert_point(firb, termi->_if.else_blk);
+    fir_instr_goto(firb, join_blk);
 
-    firb_set_insert_point(firb, blk);
+    fir_builder_set_insert_point(firb, blk);
 
     return (FirIfCtrl) {
         .then_blk = termi->_if.then_blk,
@@ -165,7 +165,7 @@ FirIfCtrl firb_if(FirBuilder *firb, FirVal cond) {
     };
 }
 
-void firb_ret(FirBuilder *firb, FirVal ret_val) {
+void fir_instr_ret(FirBuilder *firb, FirVal ret_val) {
     assert(firb != NULL);
     assert(firb->cur_blk->termi == NULL);
 
@@ -174,7 +174,7 @@ void firb_ret(FirBuilder *firb, FirVal ret_val) {
     termi->ret.val = ret_val;
 }
 
-void firb_ret_void(FirBuilder *firb) {
-    firb_ret(firb, fir_val_invalid());
+void fir_instr_ret_void(FirBuilder *firb) {
+    fir_instr_ret(firb, fir_val_invalid());
 }
 
