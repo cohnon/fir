@@ -98,6 +98,7 @@ FirVal fir_instr_call(FirBuilder *firb, FirFunc *target, FirVal *args, size_t n_
     FirInstr *instr = insert_instr(firb, FirInstr_Call, true);
 
     instr->call.name = target->name;
+    dynarr_init(&instr->call.args, 32);
     instr->type = target->ret_type;
     for (size_t i = 0; i < n_args; i += 1) {
         FirCallArg arg = { dynarr_get(&target->param_types, i), args[i] };

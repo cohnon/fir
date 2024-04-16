@@ -16,7 +16,8 @@ StringBuilder sb_init(size_t init_cap) {
 
 void sb_printn(StringBuilder *sb, const char *str, size_t len) {
     if (sb->len + len > sb->cap) {
-        sb->buf = realloc(sb->buf, sizeof(char) * 2*sb->cap);
+        sb->cap *= 1.5;
+        sb->buf = realloc(sb->buf, sizeof(char) * sb->cap);
     }
 
     strncpy(sb->buf + sb->len, str, len);
