@@ -73,6 +73,10 @@ typedef struct FirImm {
             uint64_t n;
             bool     is_signed;
         } integer;
+        struct {
+            FirSym str;
+            bool   zero_terminated;
+        } string;
     };
 } FirImm;
 

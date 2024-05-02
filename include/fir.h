@@ -65,6 +65,7 @@ typedef struct FirVal {
 
 FirVal fir_val_invalid(void);
 FirVal fir_imm_int(FirModule *module, unsigned long long n, _Bool is_signed);
+FirVal fir_imm_str(FirModule *module, FirSym str, _Bool zero_terminated);
 
 // == FirType ================
 typedef enum FirTypeKind {

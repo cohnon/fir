@@ -9,6 +9,10 @@ int main(void) {
     // create module
     FirModule *module = fir_mod_create();
 
+    // declare put function
+    FirType puts_params[] = { fir_ty_ptr() };
+    FirFunc *puts_func = fir_func_create(module, fir_sym_lit("puts"), fir_ty_int(32), puts_params, 1);
+
     // create main function
     FirFunc *func = fir_func_create(module, fir_sym_lit("main"), fir_ty_int(32), NULL, 0);
 
@@ -44,8 +48,12 @@ int main(void) {
         sum,
         sum2,
     };
-
     fir_instr_call(firb, add_func, args, 2);
+
+    FirVal puts_args[] = {
+        fir_imm_str(module, fir_sym_lit("Hello, World"), true)
+    };
+    fir_instr_call(firb, puts_func, puts_args, 1);
 
     // ret
     FirVal ret_val = fir_imm_int(module, 0, false);

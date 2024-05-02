@@ -157,6 +157,22 @@ FirVal fir_imm_int(FirModule *module, unsigned long long n, bool is_signed) {
     return val;
 }
 
+FirVal fir_imm_str(FirModule *module, FirSym str, bool zero_terminated) {
+    assert(module != NULL);
+
+    FirVal val;
+    val.kind = FirVal_Imm;
+
+    FirImm *imm = fir_arena_alloc_T(&module->arena, FirImm);
+    imm->type.kind = FirType_Ptr;
+    imm->string.str = str;
+    imm->string.zero_terminated = zero_terminated;
+
+    val.imm = imm;
+
+    return val;
+}
+
 static bool fir_verify_blk(FirBlock *blk) {
     if (blk->termi == NULL) {
         return false;
