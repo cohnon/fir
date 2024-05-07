@@ -24,7 +24,7 @@ int32_t main(void) {
 	blk_if_join0:;
 	int32_t reg_1 = 100 + reg_0;
 	int32_t reg_2 = add(reg_0, reg_1);
-	int32_t reg_3 = puts();
+	int32_t reg_3 = puts("Hello, World!");
 	return 0;
 
 }

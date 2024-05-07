@@ -51,7 +51,7 @@ int main(void) {
     fir_instr_call(firb, add_func, args, 2);
 
     FirVal puts_args[] = {
-        fir_imm_str(module, fir_sym_lit("Hello, World"), true)
+        fir_imm_str(module, fir_sym_lit("Hello, World!"), true)
     };
     fir_instr_call(firb, puts_func, puts_args, 1);
 

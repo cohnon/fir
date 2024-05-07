@@ -65,8 +65,13 @@ typedef struct FirBlock {
 } FirBlock;
 
 // == fir values ============
+typedef enum FirImmKind {
+    FirImm_Int,
+    FirImm_Str,
+} FirImmKind;
+
 typedef struct FirImm {
-    FirType type;
+    FirImmKind kind;
 
     union {
         struct {

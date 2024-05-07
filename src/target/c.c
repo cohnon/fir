@@ -5,6 +5,8 @@
 #include "../dynarr.h"
 #include "../instr.h"
 
+#include <inttypes.h>
+
 
 typedef struct FirTargetCtx {
     FirTarget *target;
@@ -61,12 +63,16 @@ static void cg_imm(FirTargetCtx *ctx, FirImm *imm) {
     assert(ctx != NULL);
     assert(imm != NULL);
 
-    switch (imm->type.kind) {
-    case FirType_Int:
+    switch (imm->kind) {
+    case FirImm_Int:
         if (imm->integer.is_signed) {
             sb_print_lit(ctx->output, "-");
         }
-        sb_printf(ctx->output, "%ld", imm->integer.n);
+        sb_printf(ctx->output, "%" PRIu64, imm->integer.n);
+        break;
+
+    case FirImm_Str:
+        sb_printf(ctx->output, "\"%.*s\"", fir_sym_fmt_raw(imm->string.str));
         break;
     }
 }

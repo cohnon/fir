@@ -2,7 +2,8 @@
 
 #include "fir_priv.h"
 
-#include "stdio.h"
+#include <stdio.h>
+#include <inttypes.h>
 
 static void fir_print_type(FirType *type) {
     switch (type->kind) {
@@ -45,15 +46,25 @@ static void fir_print_val(FirVal *val) {
         break;
 
     case FirVal_Imm:
-        switch (val->imm->type.kind) {
-        case FirType_Int:
+        switch (val->imm->kind) {
+        case FirImm_Int:
             if (val->imm->integer.is_signed) {
                 printf("-");
             }
-            printf("%ld", val->imm->integer.n);
+            printf("%" PRIu64, val->imm->integer.n);
 
             break;
+
+        case FirImm_Str:
+            printf("\"%.*s", fir_sym_fmt_raw(val->imm->string.str));
+            if (val->imm->string.zero_terminated) {
+                printf("\\0");
+            }
+            printf("\"");
+            break;
+
         }
+
         break;
 
     default:
