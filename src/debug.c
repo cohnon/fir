@@ -62,7 +62,6 @@ static void fir_print_val(FirVal *val) {
             }
             printf("\"");
             break;
-
         }
 
         break;
