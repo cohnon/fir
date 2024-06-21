@@ -1,8 +1,8 @@
-CFILES = $(wildcard src/*.c src/*/*.c)
-OFILES = $(patsubst src/%.c, build/%.o, $(CFILES))
+CFILES = $(wildcard src/*.c src/*/*.c util/*.c)
+OFILES = $(patsubst %.c, build/%.o, $(CFILES))
 
 CC = gcc
-FLAGS = -g -std=c11 -Wall -Wextra -pedantic -Werror -Iinclude -Isrc
+FLAGS = -g -std=c11 -Wall -Wextra -pedantic -Werror -Iinclude -Iutil -Isrc
 
 .Phony: all
 all: build/fir
@@ -10,7 +10,7 @@ all: build/fir
 build/fir: test/main.c $(OFILES)
 	$(CC) $(FLAGS) $^ -o $@
 
-build/%.o: src/%.c
+build/%.o: %.c
 	mkdir -p $(@D)
 	$(CC) -c $(FLAGS) $(INCLUDES) $^ -o $@
 

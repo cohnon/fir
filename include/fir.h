@@ -106,8 +106,8 @@ FirSym fir_sym_slc(char *c_str, size_t len);
 
 _Bool fir_sym_eq(FirSym a, FirSym b);
 
-#define fir_sym_fmt(sym) (int)(sym).len, (sym).ptr, (sym).unique_id
-#define fir_sym_fmt_raw(sym) (int)(sym).len, (sym).ptr
+#define fir_sym_fmt_id(sym) (int)(sym).len, (sym).ptr, (sym).unique_id
+#define fir_sym_fmt(sym) (int)(sym).len, (sym).ptr
 
 // == FirBuilder =============
 void fir_builder_init_func(FirBuilder *firb, FirFunc *func);

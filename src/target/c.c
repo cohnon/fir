@@ -1,9 +1,10 @@
 #include "c.h"
 
-#include "../fir_priv.h"
+#include "fir_priv.h"
 
-#include "../dynarr.h"
-#include "../instr.h"
+#include "string_builder.h"
+#include "dynarr.h"
+#include "instr.h"
 
 #include <inttypes.h>
 
@@ -72,13 +73,13 @@ static void cg_imm(FirTargetCtx *ctx, FirImm *imm) {
         break;
 
     case FirImm_Str:
-        sb_printf(ctx->output, "\"%.*s\"", fir_sym_fmt_raw(imm->string.str));
+        sb_printf(ctx->output, "\"%.*s\"", fir_sym_fmt(imm->string.str));
         break;
     }
 }
 
 static void cg_reg(FirTargetCtx *ctx, FirInstr *reg) {
-    sb_printf(ctx->output, "reg_%.*s%d", fir_sym_fmt(reg->name));
+    sb_printf(ctx->output, "reg_%.*s%d", fir_sym_fmt_id(reg->name));
 }
 
 static void cg_instr_assignment(FirTargetCtx *ctx, FirInstr *instr) {
@@ -136,7 +137,7 @@ static void cg_instr(FirTargetCtx *ctx, FirInstr *instr) {
 
     case FirInstr_Call:
         cg_instr_assignment(ctx, instr);
-        sb_printf(ctx->output, "%.*s(", fir_sym_fmt_raw(instr->call.name));
+        sb_printf(ctx->output, "%.*s(", fir_sym_fmt(instr->call.name));
         dynarr_foreach(instr->call.args, i) {
             FirCallArg arg = dynarr_get(&instr->call.args, i);
             cg_val(ctx, &arg.val);
@@ -164,7 +165,7 @@ static void cg_termi(FirTargetCtx *ctx, FirTermi *termi) {
 
     switch (termi->kind) {
     case FirTermi_Goto:
-        sb_printf(ctx->output, "goto blk_%.*s%d;", fir_sym_fmt(termi->_goto.blk->name));
+        sb_printf(ctx->output, "goto blk_%.*s%d;", fir_sym_fmt_id(termi->_goto.blk->name));
         break;
 
     case FirTermi_If:
@@ -172,8 +173,8 @@ static void cg_termi(FirTargetCtx *ctx, FirTermi *termi) {
         cg_val(ctx, &termi->_if.cond);
         sb_printf(ctx->output,
             ") { goto blk_%.*s%d; } else { goto blk_%.*s%d; }",
-            fir_sym_fmt(termi->_if.then_blk->name),
-            fir_sym_fmt(termi->_if.else_blk->name)
+            fir_sym_fmt_id(termi->_if.then_blk->name),
+            fir_sym_fmt_id(termi->_if.else_blk->name)
         );
         break;
 
@@ -198,7 +199,7 @@ static void cg_blk(FirTargetCtx *ctx, FirBlock *blk) {
     assert(ctx != NULL);
     assert(blk != NULL);
 
-    sb_printf(ctx->output, "\tblk_%.*s%d:;\n", fir_sym_fmt(blk->name));
+    sb_printf(ctx->output, "\tblk_%.*s%d:;\n", fir_sym_fmt_id(blk->name));
 
     dynarr_foreach(blk->instrs, i) {
         FirInstr *instr = dynarr_get(&blk->instrs, i);
@@ -215,7 +216,7 @@ static void cg_func_sig(FirTargetCtx *ctx, FirFunc *func) {
     assert(func != NULL);
 
     cg_type(ctx, func->ret_type);
-    sb_printf(ctx->output, " %.*s(", fir_sym_fmt_raw(func->name));
+    sb_printf(ctx->output, " %.*s(", fir_sym_fmt(func->name));
 
     if (func->param_types.len == 0) {
         sb_printf(ctx->output, "void");
