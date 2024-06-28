@@ -42,7 +42,7 @@ typedef struct FirTarget {
 
 // == functions =============
 typedef struct FirFunc {
-    FirSym            name;
+    FirString            name;
     FirModule         *parent;
 
     DynArr(FirType)   param_types;
@@ -54,7 +54,7 @@ typedef struct FirFunc {
 
 // == blocks ================
 typedef struct FirBlock {
-    FirSym            name;
+    FirString            name;
     FirFunc           *parent;
 
     DynArr(FirInstr*) instrs;
@@ -79,7 +79,7 @@ typedef struct FirImm {
             bool     is_signed;
         } integer;
         struct {
-            FirSym str;
+            FirString str;
             bool   zero_terminated;
         } string;
     };
@@ -92,7 +92,7 @@ typedef enum FirGlobKind {
 typedef struct FirGlob {
     FirGlobKind kind;
     FirType     type;
-    FirSym      name;
+    FirString      name;
 } FirGlob;
 
 FirVal fir_val_instr(FirInstr *instr);

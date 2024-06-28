@@ -39,7 +39,7 @@ typedef struct FirCallArg {
 } FirCallArg;
 
 typedef struct FirCall {
-    FirSym             name;
+    FirString          name;
     DynArr(FirCallArg) args;
 } FirCall;
 
@@ -55,7 +55,7 @@ typedef struct FirPhi {
 typedef struct FirInstr FirInstr;
 typedef struct FirInstr {
     FirInstrKind kind;
-    FirSym       name;
+    FirString    name;
     int          id;
 
     FirType  type;
@@ -81,7 +81,7 @@ typedef struct FirTermiGoto {
 } FirTermiGoto;
 
 typedef struct FirTermiIf {
-    FirVal   cond;
+    FirVal    cond;
     FirBlock *then_blk;
     FirBlock *else_blk;
 } FirTermiIf;

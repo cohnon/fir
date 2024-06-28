@@ -12,7 +12,7 @@ typedef struct FirFunc    FirFunc;
 typedef struct FirBlock   FirBlock;
 typedef struct FirVal     FirVal;
 typedef struct FirType    FirType;
-typedef struct FirSym     FirSym;
+typedef struct FirString  FirString;
 typedef struct FirBuilder FirBuilder;
 
 // == FirModule ==============
@@ -31,13 +31,13 @@ char *fir_target_get_str_buf(FirTarget *target);
 void fir_target_to_file(FirTarget *target, const char *path);
 
 // == FirFunc ================
-FirFunc *fir_func_create(FirModule *module, FirSym name, FirType ret_ty, FirType *param_types, size_t n_params);
+FirFunc *fir_func_create(FirModule *module, FirString name, FirType ret_ty, FirType *param_types, size_t n_params);
 
 FirBlock *fir_func_get_entry_blk(FirFunc *func);
 
 // == FirBlock ===============
 FirBlock *fir_blk_create(FirFunc *func);
-FirBlock *fir_blk_create_named(FirFunc *func, FirSym name);
+FirBlock *fir_blk_create_named(FirFunc *func, FirString name);
 
 FirFunc *fir_blk_get_parent(FirBlock *blk);
 
@@ -65,7 +65,7 @@ typedef struct FirVal {
 
 FirVal fir_val_invalid(void);
 FirVal fir_imm_int(FirModule *module, unsigned long long n, _Bool is_signed);
-FirVal fir_imm_str(FirModule *module, FirSym str, _Bool zero_terminated);
+FirVal fir_imm_str(FirModule *module, FirString str, _Bool zero_terminated);
 
 // == FirType ================
 typedef enum FirTypeKind {
@@ -93,21 +93,21 @@ static_assert(sizeof(FirType) == 2, "expected 'FirType' to be of size 2");
 
 #define fir_is_void(ty) ((ty).kind == FirType_Int && (ty).data == 0)
 
-// == FirSym =================
-typedef struct FirSym {
+// == FirString =================
+typedef struct FirString {
     const char *ptr;
     uint16_t   len;
     uint16_t   unique_id;
-} FirSym;
+} FirString;
 
-FirSym fir_sym_none(void);
-#define fir_sym_lit(c_str) (FirSym){ .ptr = c_str, .len = sizeof(c_str) - 1 }
-FirSym fir_sym_slc(char *c_str, size_t len);
+FirString fir_string_none(void);
+#define fir_string_lit(c_str) (FirString){ .ptr = c_str, .len = sizeof(c_str) - 1 }
+FirString fir_string_slc(char *c_str, size_t len);
 
-_Bool fir_sym_eq(FirSym a, FirSym b);
+_Bool fir_string_eq(FirString a, FirString b);
 
-#define fir_sym_fmt_id(sym) (int)(sym).len, (sym).ptr, (sym).unique_id
-#define fir_sym_fmt(sym) (int)(sym).len, (sym).ptr
+#define fir_string_fmt_id(sym) (int)(sym).len, (sym).ptr, (sym).unique_id
+#define fir_string_fmt(sym) (int)(sym).len, (sym).ptr
 
 // == FirBuilder =============
 void fir_builder_init_func(FirBuilder *firb, FirFunc *func);

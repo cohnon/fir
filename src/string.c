@@ -2,11 +2,11 @@
 
 #include "fir_priv.h"
 
-void fir_sym_set_unique_blk_idx(FirString *sym, FirFunc *func) {
+void fir_string_set_unique_blk_idx(FirString *sym, FirFunc *func) {
     int next_id = 0;
     dynarr_foreach(func->blks, i) {
         FirBlock *blk = dynarr_get(&func->blks, i);
-        if (fir_sym_eq(*sym, blk->name) && blk->name.unique_id >= next_id) {
+        if (fir_string_eq(*sym, blk->name) && blk->name.unique_id >= next_id) {
             next_id = blk->name.unique_id + 1;
         }
     }
@@ -14,11 +14,11 @@ void fir_sym_set_unique_blk_idx(FirString *sym, FirFunc *func) {
     sym->unique_id = next_id;
 }
 
-void fir_sym_set_unique_instr_idx(FirString *sym, FirFunc *func) {
+void fir_string_set_unique_instr_idx(FirString *sym, FirFunc *func) {
     int next_id = 0;
     dynarr_foreach(func->instrs, i) {
         FirInstr *instr = dynarr_get(&func->instrs, i);
-        if (fir_sym_eq(*sym, instr->name) && instr->name.unique_id >= next_id) {
+        if (fir_string_eq(*sym, instr->name) && instr->name.unique_id >= next_id) {
             next_id = instr->name.unique_id + 1;
         }
     }

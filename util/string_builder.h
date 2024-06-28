@@ -1,6 +1,7 @@
 #ifndef STRING_BUILDER_H
 #define STRING_BUILDER_H
 
+#include "fir.h"
 #include <stddef.h>
 
 
@@ -18,5 +19,7 @@ __attribute__((format(printf, 2, 3)))
 void sb_printf(StringBuilder *sb, const char *fmt, ...);
 
 #define sb_print_lit(sb, lit) sb_printn(sb, lit, sizeof(lit) - 1)
+
+FirString sb_to_string(StringBuilder *sb);
 
 #endif
