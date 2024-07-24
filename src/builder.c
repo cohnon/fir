@@ -1,7 +1,8 @@
 #include "fir_priv.h"
-#include "symbol.h"
-#include "arena.h"
 
+#include "string.h"
+#include "fir/fir.h"
+#include "fir/arena.h"
 #include <assert.h>
 
 
@@ -21,7 +22,7 @@ void fir_builder_init_func(FirBuilder *firb, FirFunc *func) {
     assert(func != NULL);
     assert(func->blks.len == 0);
 
-    FirBlock *entry = fir_blk_create_named(func, fir_sym_lit("entry"));
+    FirBlock *entry = fir_blk_create_named(func, string_lit("entry"));
 
     fir_builder_set_insert_point(firb, entry);
 }
@@ -40,9 +41,9 @@ static FirInstr *insert_instr(FirBuilder *firb, FirInstrKind kind, bool named) {
 
     FirInstr *instr = fir_arena_alloc_T(&firb->module->arena, FirInstr);
     instr->kind = kind;
-    instr->name = fir_sym_none();
+    instr->name = string_none();
     if (named) {
-        fir_sym_set_unique_instr_idx(&instr->name, firb->cur_func);
+        fir_func_set_unique_instr_idx(&instr->name, firb->cur_func);
     }
 
     dynarr_push(&firb->cur_func->instrs, &instr);
@@ -146,9 +147,9 @@ FirIfCtrl fir_instr_if(FirBuilder *firb, FirVal cond) {
     FirBlock *blk = firb->cur_blk;
 
     termi->_if.cond = cond;
-    termi->_if.then_blk = fir_blk_create_named(func, fir_sym_lit("if_then"));
-    termi->_if.else_blk = fir_blk_create_named(func, fir_sym_lit("if_else"));
-    FirBlock *join_blk  = fir_blk_create_named(func, fir_sym_lit("if_join"));
+    termi->_if.then_blk = fir_blk_create_named(func, string_lit("if_then"));
+    termi->_if.else_blk = fir_blk_create_named(func, string_lit("if_else"));
+    FirBlock *join_blk  = fir_blk_create_named(func, string_lit("if_join"));
 
     // goto join
     fir_builder_set_insert_point(firb, termi->_if.then_blk);

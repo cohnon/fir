@@ -1,5 +1,5 @@
-#ifndef STRING_BUILDER_H
-#define STRING_BUILDER_H
+#ifndef FIR_STRING_BUILDER_H
+#define FIR_STRING_BUILDER_H
 
 #include "fir.h"
 #include <stddef.h>
@@ -20,6 +20,6 @@ void sb_printf(StringBuilder *sb, const char *fmt, ...);
 
 #define sb_print_lit(sb, lit) sb_printn(sb, lit, sizeof(lit) - 1)
 
-FirString sb_to_string(StringBuilder *sb);
+String sb_to_string(StringBuilder *sb);
 
 #endif

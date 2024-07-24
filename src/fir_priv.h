@@ -1,12 +1,12 @@
 #ifndef FIR_PRIV_H
 #define FIR_PRIV_H
 
-#include "fir.h"
+#include "fir/fir.h"
 
-#include "arena.h"
-#include "dynarr.h"
+#include "fir/arena.h"
+#include "fir/dynarr.h"
+#include "fir/string_builder.h"
 #include "instr.h"
-#include "string_builder.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -42,7 +42,7 @@ typedef struct FirTarget {
 
 // == functions =============
 typedef struct FirFunc {
-    FirString            name;
+    String            name;
     FirModule         *parent;
 
     DynArr(FirType)   param_types;
@@ -54,7 +54,7 @@ typedef struct FirFunc {
 
 // == blocks ================
 typedef struct FirBlock {
-    FirString            name;
+    String            name;
     FirFunc           *parent;
 
     DynArr(FirInstr*) instrs;
@@ -79,7 +79,7 @@ typedef struct FirImm {
             bool     is_signed;
         } integer;
         struct {
-            FirString str;
+            String str;
             bool   zero_terminated;
         } string;
     };
@@ -92,7 +92,7 @@ typedef enum FirGlobKind {
 typedef struct FirGlob {
     FirGlobKind kind;
     FirType     type;
-    FirString      name;
+    String      name;
 } FirGlob;
 
 FirVal fir_val_instr(FirInstr *instr);

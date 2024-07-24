@@ -1,5 +1,5 @@
-#ifndef FIR_UTIL_DYNARR_H
-#define FIR_UTIL_DYNARR_H
+#ifndef FIR_DYNARR_H
+#define FIR_DYNARR_H
 
 #include <stddef.h>
 

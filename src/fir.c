@@ -1,9 +1,8 @@
-#include "fir.h"
+#include "fir/fir.h"
 #include "fir_priv.h"
 
-#include "arena.h"
-#include "dynarr.h"
-#include "symbol.h"
+#include "fir/arena.h"
+#include "fir/dynarr.h"
 #include "target/c.h"
 
 #include <assert.h>
@@ -67,7 +66,7 @@ void fir_target_to_file(FirTarget *target, const char *path) {
     fclose(out_file);
 }
 
-FirFunc *fir_func_create(FirModule *module, FirSym name, FirType ret_ty, FirType *param_types, size_t n_params) {
+FirFunc *fir_func_create(FirModule *module, String name, FirType ret_ty, FirType *param_types, size_t n_params) {
     assert(module != NULL);
 
     FirFunc *func = fir_arena_alloc_T(&module->arena, FirFunc);
@@ -96,16 +95,40 @@ FirBlock *fir_func_get_entry_blk(FirFunc *func) {
     return dynarr_get(&func->blks, 0);
 }
 
+void string_set_unique_blk_idx(String *string, FirFunc *func) {
+    int next_id = 0;
+    dynarr_foreach(func->blks, i) {
+        FirBlock *blk = dynarr_get(&func->blks, i);
+        if (string_eq(*string, blk->name) && blk->name.unique_id >= next_id) {
+            next_id = blk->name.unique_id + 1;
+        }
+    }
+
+    string->unique_id = next_id;
+}
+
+void string_set_unique_instr_idx(String *string, FirFunc *func) {
+    int next_id = 0;
+    dynarr_foreach(func->instrs, i) {
+        FirInstr *instr = dynarr_get(&func->instrs, i);
+        if (string_eq(*string, instr->name) && instr->name.unique_id >= next_id) {
+            next_id = instr->name.unique_id + 1;
+        }
+    }
+
+    string->unique_id = next_id;
+}
+
 FirBlock *fir_blk_create(FirFunc *func) {
     assert(func != NULL);
 
-    return fir_blk_create_named(func, fir_sym_none());
+    return fir_blk_create_named(func, string_none());
 }
 
-FirBlock *fir_blk_create_named(FirFunc *func, FirSym name) {
+FirBlock *fir_blk_create_named(FirFunc *func, String name) {
     assert(func != NULL);
 
-    fir_sym_set_unique_blk_idx(&name, func);
+    string_set_unique_blk_idx(&name, func);
 
     FirBlock *blk = fir_arena_alloc_T(&func->parent->arena, FirBlock);
     dynarr_push(&func->blks, &blk);
@@ -157,7 +180,7 @@ FirVal fir_imm_int(FirModule *module, unsigned long long n, bool is_signed) {
     return val;
 }
 
-FirVal fir_imm_str(FirModule *module, FirSym str, bool zero_terminated) {
+FirVal fir_imm_str(FirModule *module, String str, bool zero_terminated) {
     assert(module != NULL);
 
     FirVal val;

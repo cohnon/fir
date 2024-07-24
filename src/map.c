@@ -1,13 +1,15 @@
-#include "map.h"
+#include "fir/map.h"
 
 #include <assert.h>
 #include <stdlib.h>
 
 
+#define GROW_AT 0.6
+
 typedef Map(void*) MapAny;
 typedef MapEntry(void*) MapEntryAny;
 
-static size_t hash(FirString key) {
+static size_t hash(String key) {
     unsigned int h = 2166136261;
     for (size_t i = 0; i < key.len; i += 1) {
         h = h ^ ((uint8_t)*(key.ptr + i));
@@ -17,7 +19,7 @@ static size_t hash(FirString key) {
     return h;
 }
 
-static void resize(void *anymap, size_t new_cap) {
+static void resize(void *anymap, size_t size, size_t new_cap) {
     MapAny *map = (MapAny*)anymap;
 
     MapEntryAny *old_items = (MapEntryAny*)map->items;
@@ -25,7 +27,7 @@ static void resize(void *anymap, size_t new_cap) {
 
     for (size_t i = 0; i < map->cap; i += 1) {
         if (old_items[i].used) {
-            map_priv_insert(map, old_items[i].key, map->items[i].val);
+            map_priv_insert(map, size, old_items[i].key, map->items[i].val);
         }
     }
 
@@ -49,11 +51,11 @@ void map_deinit(void* anymap) {
     map->cap = 0;
 }
 
-bool map_priv_insert(void* anymap, FirString key, void* val) {
+void *map_priv_insert(void* anymap, size_t size, String key, void* val) {
     MapAny *map = (MapAny*)anymap;
 
-    if (map->len * 5 >= map->cap * 4) {
-        resize(map, map->cap * 2);
+    if ((float)map->len / (float)map->cap >= GROW_AT) {
+        resize(map, size, map->cap * 2);
     }
 
     size_t start_idx = hash(key);
@@ -62,9 +64,9 @@ bool map_priv_insert(void* anymap, FirString key, void* val) {
 
         MapEntryAny *entry = (MapEntryAny*)&map->items[idx];
 
-        bool already_exists = entry->used && fir_string_eq(entry->key, key);
+        bool already_exists = entry->used && string_eq(entry->key, key);
         if (already_exists) {
-            return false;
+            return entry->val;
         }
 
         if (!entry->used) {
@@ -73,14 +75,14 @@ bool map_priv_insert(void* anymap, FirString key, void* val) {
             entry->key = key;
             entry->val = val;
 
-            return true;
+            return NULL;
         }
     }
 
-    return false;
+    __builtin_unreachable();
 }
 
-void* map_priv_get(void* anymap, FirString key) {
+void* map_priv_get(void* anymap, String key) {
     MapAny *map = (MapAny*)anymap;
 
     size_t start_idx = hash(key);
@@ -90,7 +92,7 @@ void* map_priv_get(void* anymap, FirString key) {
         MapEntryAny *entry = (MapEntryAny*)&map->items[idx];
 
         
-        bool exists = entry->used && fir_string_eq(entry->key, key);
+        bool exists = entry->used && string_eq(entry->key, key);
         if (exists) {
             return entry->val;
         }

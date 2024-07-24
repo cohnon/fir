@@ -1,4 +1,4 @@
-#include "debug.h"
+#include "fir/debug.h"
 
 #include "fir_priv.h"
 
@@ -31,12 +31,12 @@ static void fir_print_label(FirBlock *blk) {
     if (blk->name.len == 0) {
         printf("bb");
     } else {
-        printf("%.*s%d", fir_sym_fmt_id(blk->name));
+        printf("%.*s%d", string_fmt_id(blk->name));
     }
 }
 
 static void fir_print_register(FirInstr *instr) {
-    printf("%%%.*s%d", fir_sym_fmt_id(instr->name));
+    printf("%%%.*s%d", string_fmt_id(instr->name));
 }
 
 static void fir_print_val(FirVal *val) {
@@ -56,7 +56,7 @@ static void fir_print_val(FirVal *val) {
             break;
 
         case FirImm_Str:
-            printf("\"%.*s", fir_sym_fmt(val->imm->string.str));
+            printf("\"%.*s", string_fmt(val->imm->string.str));
             if (val->imm->string.zero_terminated) {
                 printf("\\0");
             }
@@ -109,7 +109,7 @@ static void fir_print_instr(FirInstr *instr) {
     case FirInstr_Call:
         printf("call ");
         fir_print_type(&instr->type);
-        printf(" @%.*s(", fir_sym_fmt(instr->call.name));
+        printf(" @%.*s(", string_fmt(instr->call.name));
         dynarr_foreach(instr->call.args, i) {
             FirCallArg *arg = dynarr_get_ref(&instr->call.args, i);
             fir_print_type(&arg->type);
@@ -187,7 +187,7 @@ void fir_print_blk(FirBlock *blk) {
 }
 
 void fir_print_func(FirFunc *func) {
-    printf("func @%.*s(", fir_sym_fmt(func->name));
+    printf("func @%.*s(", string_fmt(func->name));
 
     if (func->param_types.len > 0) {
         printf(" ");

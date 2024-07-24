@@ -1,5 +1,5 @@
-#include "fir.h"
-#include "debug.h"
+#include "fir/fir.h"
+#include "fir/debug.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -11,14 +11,14 @@ int main(void) {
 
     // declare put function
     FirType puts_params[] = { fir_ty_ptr() };
-    FirFunc *puts_func = fir_func_create(module, fir_sym_lit("puts"), fir_ty_int(32), puts_params, 1);
+    FirFunc *puts_func = fir_func_create(module, fir_string_lit("puts"), fir_ty_int(32), puts_params, 1);
 
     // create main function
-    FirFunc *func = fir_func_create(module, fir_sym_lit("main"), fir_ty_int(32), NULL, 0);
+    FirFunc *func = fir_func_create(module, fir_string_lit("main"), fir_ty_int(32), NULL, 0);
 
     // create add function
     FirType add_params[] = { fir_ty_int(32), fir_ty_int(32) };
-    FirFunc *add_func = fir_func_create(module, fir_sym_lit("add"), fir_ty_int(32), add_params, 2);
+    FirFunc *add_func = fir_func_create(module, fir_string_lit("add"), fir_ty_int(32), add_params, 2);
 
     // builder
     FirBuilder *firb = fir_mod_get_builder(module);
@@ -51,7 +51,7 @@ int main(void) {
     fir_instr_call(firb, add_func, args, 2);
 
     FirVal puts_args[] = {
-        fir_imm_str(module, fir_sym_lit("Hello, World!"), true)
+        fir_imm_str(module, fir_string_lit("Hello, World!"), true)
     };
     fir_instr_call(firb, puts_func, puts_args, 1);
 

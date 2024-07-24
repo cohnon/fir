@@ -1,4 +1,4 @@
-#include "arena.h"
+#include "fir/arena.h"
 
 #include <assert.h>
 #include <stdalign.h>

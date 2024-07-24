@@ -1,4 +1,4 @@
-#include "string_builder.h"
+#include "fir/string_builder.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -38,8 +38,8 @@ void sb_printf(StringBuilder *sb, const char *fmt, ...) {
     sb_printn(sb, buf, buf_len);
 }
 
-FirString sb_to_string(StringBuilder *sb) {
-    return (FirString) {
+String sb_to_string(StringBuilder *sb) {
+    return (String) {
         .ptr = sb->buf,
         .len = sb->len,
     };

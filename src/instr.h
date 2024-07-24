@@ -1,8 +1,8 @@
 #ifndef FIR_INSTR_H
 #define FIR_INSTR_H
 
-#include "fir.h"
-#include "dynarr.h"
+#include "fir/fir.h"
+#include "fir/dynarr.h"
 #include <stdbool.h>
 
 
@@ -39,7 +39,7 @@ typedef struct FirCallArg {
 } FirCallArg;
 
 typedef struct FirCall {
-    FirString          name;
+    String          name;
     DynArr(FirCallArg) args;
 } FirCall;
 
@@ -55,7 +55,7 @@ typedef struct FirPhi {
 typedef struct FirInstr FirInstr;
 typedef struct FirInstr {
     FirInstrKind kind;
-    FirString    name;
+    String    name;
     int          id;
 
     FirType  type;
