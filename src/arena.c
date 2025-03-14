@@ -36,6 +36,7 @@ fir_Arena fir_arena_init(size_t page_size) {
     assert(page_size > 0);
 
     fir_Arena arena;
+    arena.cur_page = NULL;
     arena.page_size = page_size;
 
     new_page(&arena);
