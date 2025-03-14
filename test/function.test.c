@@ -4,15 +4,30 @@
 #include <stdbool.h>
 #include <string.h>
 
-bool test_function(void) {
-    fir_Module module = fir_module_init("function");
+bool test_function(bool dump) {
+    fir_Module module = fir_module_init("func_test");
 
-    char *name = "FUNCTION NAME";
+    #define NAME "function"
 
-    fir_Function *func = fir_func_create(&module, name);
+    fir_Function *func = fir_func_create(&module, NAME);
     char *name_str = fir_string_get(&module, func->name);
 
-    assert(strcmp(name_str, name) == 0);
+    assert(module.funcs.len == 1);
+    assert(strcmp(name_str, NAME) == 0);
+
+    // dump
+    char *expected =
+        "@" NAME " : () -> ()\n";
+
+    char buffer[128] = {0};
+    FILE *fp = fmemopen(buffer, sizeof(buffer), "w+");
+    fir_func_dump(&module, func, fp);
+
+    assert(strcmp(buffer, expected) == 0);
+
+    if (dump) {
+        fir_module_dump(&module, stdout);
+    }
 
     fir_module_deinit(&module);
 

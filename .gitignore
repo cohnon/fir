@@ -57,3 +57,4 @@ dkms.conf
 # Clang
 compile_commands.json
 .clang_format
+.cache

@@ -24,3 +24,15 @@ void fir_module_deinit(fir_Module *module) {
 
     fir_arena_deinit(&module->arena);
 }
+
+void fir_module_dump(fir_Module *module, FILE *fp) {
+    fprintf(fp, "module %s\n", module->name);
+
+    for (size_t i = 0; i < module->funcs.len; i++) {
+        fprintf(fp, "\n");
+
+        fir_Function *func = *fir_array_get(fir_Function*, &module->funcs, i);
+
+        fir_func_dump(module, func, fp);
+    }
+}

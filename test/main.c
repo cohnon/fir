@@ -7,22 +7,22 @@
 bool test_arena(void);
 bool test_array(void);
 bool test_string(void);
-bool test_function(void);
+bool test_function(bool dump);
 
 int main(void) {
+    printf("[testing arena]\n");
     assert(test_arena());
-    printf("arena tests passed...\n");
 
+    printf("[testing array]\n");
     assert(test_array());
-    printf("array tests passed...\n");
 
+    printf("[testing string]\n");
     assert(test_string());
-    printf("string tests passed...\n");
 
-    assert(test_function());
-    printf("function tests passed...\n");
+    printf("[testing function]\n");
+    assert(test_function(true));
 
-    printf("== all tests passed ==\n");
+    printf("[all tests passed]\n");
 
     return 0;
 }

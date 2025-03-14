@@ -4,6 +4,7 @@
 #include "fir_util.h"
 
 #include <stddef.h>
+#include <stdio.h>
 
 typedef struct fir_Module fir_Module;
 
@@ -17,10 +18,10 @@ fir_StringID fir_string_add(fir_Module *module, const char *c_str);
 char *fir_string_get(fir_Module *module, fir_StringID string);
 
 // Module
-#define FIR_MODULE_NAME_MAX_LEN 128
+#define FIR_MODULE_NAME_MAX_LEN 127
 
 struct fir_Module {
-    char name[FIR_MODULE_NAME_MAX_LEN];
+    char name[FIR_MODULE_NAME_MAX_LEN + 1];
 
     fir_Arena arena;
     fir_StringTable string_table;
@@ -31,11 +32,15 @@ struct fir_Module {
 fir_Module fir_module_init(const char *name);
 void fir_module_deinit(fir_Module *module);
 
+void fir_module_dump(fir_Module *module, FILE *fp);
+
 // Function
 typedef struct fir_Function {
     fir_StringID name;
 } fir_Function;
 
 fir_Function *fir_func_create(fir_Module *module, const char *name);
+
+void fir_func_dump(fir_Module *module, fir_Function *func, FILE *fp);
 
 #endif
