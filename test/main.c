@@ -1,12 +1,20 @@
-#include "fir.h"
+#include <fir.h>
+
+#include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
+
+bool test_arena(void);
+bool test_array(void);
 
 int main(void) {
-    fir_Module module = fir_module_init(
-        "test_module",
-        malloc, realloc, free
-    );
+    assert(test_arena());
+    printf("== arena tests passed ==\n");
+
+    assert(test_array());
+    printf("== array tests passed ==\n");
+
+    fir_Module module = fir_module_init("test_module");
 
     fir_module_deinit(&module);
 
