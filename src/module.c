@@ -33,6 +33,6 @@ void fir_module_dump(fir_Module *module, FILE *fp) {
 
         fir_Function *func = *fir_array_get(fir_Function*, &module->funcs, i);
 
-        fir_func_dump(module, func, fp);
+        fir_func_dump(func, fp);
     }
 }

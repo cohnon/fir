@@ -14,7 +14,12 @@ static void ensure_cap(fir_Array *array, size_t elem_size, size_t cap) {
 }
 
 static void grow(fir_Array *array, size_t elem_size) {
-    ensure_cap(array, elem_size, (size_t)((float)array->cap * 1.5) + 8);
+    size_t new_cap = (size_t)((float)array->cap * 1.5);
+
+    if (new_cap == 0) {
+        new_cap = 8;
+    }
+    ensure_cap(array, elem_size, new_cap);
 }
 
 static void *ptr_from_idx(fir_Array *array, size_t elem_size, size_t idx) {

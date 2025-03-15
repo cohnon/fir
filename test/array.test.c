@@ -19,7 +19,7 @@ bool test_array(void) {
     }
 
     assert(array.len == 9);
-    assert(array.cap == 20);
+    assert(array.cap == 12);
 
     uint64_t a_back = *fir_array_get(uint64_t, &array, 0);
     assert(a_back == a);
