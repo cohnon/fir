@@ -1,7 +1,9 @@
 #include "util.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 size_t error_count = 0;
 
@@ -48,4 +50,20 @@ void expect_string(const char *desc, const char *expected, const char *got) {
 
 size_t get_error_count(void) {
     return error_count;
+}
+
+char *file_to_string(FILE *fp) {
+    int res = fseek(fp, 0, SEEK_END);
+    assert(res == 0);
+
+    size_t len = ftell(fp);
+    char *string = malloc(len + 1);
+    assert(string != NULL);
+    string[len] = '\0';
+
+    rewind(fp);
+    size_t read = fread(string, 1, len, fp);
+    assert(read == len);
+
+    return string;
 }

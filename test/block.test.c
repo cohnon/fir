@@ -2,7 +2,8 @@
 #include <fir.h>
 
 #include <stdbool.h>
-#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void test_block(bool dump) {
     fir_Module module = fir_module_init("block_test");
@@ -16,31 +17,31 @@ void test_block(bool dump) {
 
     fir_Block *entry = fir_func_get_entry(func);
 
+    expect_ptr("func ref set", func, entry->func);
     expect_int("inputs set", 2, entry->inputs.len);
 
-    fir_instr_add(func, entry, NULL, NULL);
+    fir_instr_lit_int(entry, fir_type_int(32), 100, false);
 
     fir_Block *blk1 = fir_block_create(func, "block1");
 
-    fir_instr_add(func, blk1, NULL, NULL);
-    fir_instr_add(func, blk1, NULL, NULL);
+    fir_instr_lit_int(blk1, fir_type_int(32), 50, true);
 
     // dump
     char *expected =
         "@" NAME " (i32, i16) -> ()\n"
-        "  <unhandled instruction>\n"
+        "  .r0 = lit.i32 100\n"
         ":block1\n"
-        "  <unhandled instruction>\n"
-        "  <unhandled instruction>\n"
+        "  .r1 = lit.i32 -50\n"
     ;
 
-    char buffer[128] = {0};
-    FILE *fp = fmemopen(buffer, sizeof(buffer), "w+");
+    FILE *fp = tmpfile();
     fir_func_dump(func, fp);
 
-    expect_string("dump matches", expected, buffer);
+    char *got = file_to_string(fp);
+    expect_string("dump matches", expected, got);
+    free(got);
 
-    if (dump) {
+    if (get_error_count() == 0 && dump) {
         fir_module_dump(&module, stdout);
         printf("\n");
     }

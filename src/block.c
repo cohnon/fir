@@ -5,6 +5,7 @@
 fir_Block *fir_block_create(fir_Function *func, const char *name) {
     fir_Block *blk = fir_arena_alloc(&func->module->arena, sizeof(fir_Block));
 
+    blk->func = func;
     blk->name = fir_string_add(func->module, name);
 
     blk->inputs = fir_array_init(fir_Type, 4);
@@ -22,6 +23,8 @@ void fir_block_add_input(fir_Block *block, fir_Type type) {
 void fir_block_destroy(fir_Block *block) {
     fir_array_deinit(&block->inputs);
     fir_array_deinit(&block->instrs);
+
+    block->func = NULL;
 }
 
 void fir_block_dump(fir_Function *func, fir_Block *block, FILE *fp) {
@@ -48,10 +51,11 @@ void fir_block_dump(fir_Function *func, fir_Block *block, FILE *fp) {
 
     if (block->instrs.len > 0) {
         for (size_t i = 0; i < block->instrs.len; i++) {
-            fprintf(fp, "  ");
-
             fir_Instruction *instr = *fir_array_get(fir_Instruction *, &block->instrs, i);
-            fir_instr_dump(instr, fp);
+
+            fprintf(fp, "  .r%d = ", instr->idx);
+
+            fir_instr_dump(block, instr, fp);
             fprintf(fp, "\n");
         }
     }

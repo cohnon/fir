@@ -2,6 +2,8 @@
 #include <fir.h>
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void test_function(bool dump) {
     fir_Module module = fir_module_init("func_test");
@@ -27,13 +29,14 @@ void test_function(bool dump) {
     char *expected =
         "@" NAME " (i32, i16) -> (i8, i4)\n";
 
-    char buffer[128] = {0};
-    FILE *fp = fmemopen(buffer, sizeof(buffer), "w+");
+    FILE *fp = tmpfile();
     fir_func_dump(func, fp);
 
-    expect_string("dump matches", expected, buffer);
+    char *got = file_to_string(fp);
+    expect_string("dump matches", expected, got);
+    free(got);
 
-    if (dump) {
+    if (get_error_count() == 0 && dump) {
         fir_module_dump(&module, stdout);
         printf("\n");
     }

@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #define RST "\x1b[m"
 #define RED "\x1b[31m"
@@ -14,5 +15,7 @@ void expect_ptr(const char *desc, void *expected, void *got);
 void expect_string(const char *desc, const char *expected, const char *got);
 
 size_t get_error_count(void);
+
+char *file_to_string(FILE *fp);
 
 #endif

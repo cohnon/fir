@@ -42,6 +42,19 @@ void fir_func_add_output(fir_Function *func, fir_Type type) {
     fir_array_append(fir_Type, &func->outputs, type);
 }
 
+static void set_instr_idx(fir_Function *func) {
+    size_t idx = 0;
+
+    for (size_t blk_i = 0; blk_i < func->blocks.len; blk_i++) {
+        fir_Block *blk = *fir_array_get(fir_Block *, &func->blocks, blk_i);
+
+        for (size_t instr_i = 0; instr_i < blk->instrs.len; instr_i++) {
+            fir_Instruction *instr = *fir_array_get(fir_Instruction *, &blk->instrs, instr_i);
+            instr->idx = idx++;
+        }
+    }
+}
+
 void fir_func_dump(fir_Function *func, FILE *fp) {
     char *name_str = fir_string_get(func->module, func->name);
     fprintf(fp, "@%s (", name_str);
@@ -69,6 +82,8 @@ void fir_func_dump(fir_Function *func, FILE *fp) {
     }
 
     fprintf(fp, ")\n");
+
+    set_instr_idx(func);
 
     for (size_t i = 0; i < func->blocks.len; i++) {
         fir_Block *blk = *fir_array_get(fir_Block *, &func->blocks, i);

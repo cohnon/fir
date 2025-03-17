@@ -18,7 +18,7 @@ void test_block(bool dump);
 }
 
 void print_header(const char *name) {
-    printf(BLUE "[testing %s]\n" RST, name);
+    printf(BLUE "[testing %s]" RST "\n", name);
 }
 
 int main(void) {
