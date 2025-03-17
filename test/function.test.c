@@ -1,10 +1,9 @@
+#include "util.h"
 #include <fir.h>
 
-#include <assert.h>
 #include <stdbool.h>
-#include <string.h>
 
-bool test_function(bool dump) {
+void test_function(bool dump) {
     fir_Module module = fir_module_init("func_test");
 
     #define NAME "function"
@@ -12,17 +11,17 @@ bool test_function(bool dump) {
     fir_Function *func = fir_func_create(&module, NAME);
     char *name_str = fir_string_get(&module, func->name);
 
-    assert(module.funcs.len == 1);
-    assert(strcmp(name_str, NAME) == 0);
-    assert(func->blocks.len == 1);
+    expect_int("func.len", 1, module.funcs.len);
+    expect_string("name set", NAME, name_str);
+    expect_int("entry block created", 1, func->blocks.len);
 
     fir_func_add_input(func, fir_type_int(32));
     fir_func_add_input(func, fir_type_int(16));
     fir_func_add_output(func, fir_type_int(8));
     fir_func_add_output(func, fir_type_int(4));
 
-    assert(func->outputs.len == 2);
-    assert(func->inputs.len == 2);
+    expect_int("outputs set", 2, func->outputs.len);
+    expect_int("inputs set", 2, func->inputs.len);
 
     // dump
     char *expected =
@@ -32,14 +31,13 @@ bool test_function(bool dump) {
     FILE *fp = fmemopen(buffer, sizeof(buffer), "w+");
     fir_func_dump(func, fp);
 
-    assert(strcmp(buffer, expected) == 0);
+    expect_string("dump matches", expected, buffer);
 
     if (dump) {
         fir_module_dump(&module, stdout);
+        printf("\n");
     }
 
     fir_module_deinit(&module);
-
-    return true;
 }
 

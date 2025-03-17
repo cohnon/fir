@@ -1,10 +1,10 @@
+#include "util.h"
 #include <fir.h>
 
-#include <assert.h>
 #include <stdbool.h>
 #include <string.h>
 
-bool test_block(bool dump) {
+void test_block(bool dump) {
     fir_Module module = fir_module_init("block_test");
 
     #define NAME "function"
@@ -16,7 +16,7 @@ bool test_block(bool dump) {
 
     fir_Block *entry = fir_func_get_entry(func);
 
-    assert(entry->inputs.len == 2);
+    expect_int("inputs set", 2, entry->inputs.len);
 
     fir_instr_add(func, entry, NULL, NULL);
 
@@ -38,14 +38,12 @@ bool test_block(bool dump) {
     FILE *fp = fmemopen(buffer, sizeof(buffer), "w+");
     fir_func_dump(func, fp);
 
-    printf("%s", buffer);
-    assert(strcmp(buffer, expected) == 0);
+    expect_string("dump matches", expected, buffer);
 
     if (dump) {
         fir_module_dump(&module, stdout);
+        printf("\n");
     }
 
     fir_module_deinit(&module);
-
-    return true;
 }
