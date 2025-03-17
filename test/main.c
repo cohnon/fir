@@ -8,6 +8,7 @@ bool test_arena(void);
 bool test_array(void);
 bool test_string(void);
 bool test_function(bool dump);
+bool test_block(bool dump);
 
 int main(void) {
     printf("[testing arena]\n");
@@ -20,7 +21,10 @@ int main(void) {
     assert(test_string());
 
     printf("[testing function]\n");
-    assert(test_function(true));
+    assert(test_function(false));
+
+    printf("[testing block]\n");
+    assert(test_block(true));
 
     printf("[all tests passed]\n");
 

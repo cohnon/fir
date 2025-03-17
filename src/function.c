@@ -69,4 +69,9 @@ void fir_func_dump(fir_Function *func, FILE *fp) {
     }
 
     fprintf(fp, ")\n");
+
+    for (size_t i = 0; i < func->blocks.len; i++) {
+        fir_Block *blk = *fir_array_get(fir_Block *, &func->blocks, i);
+        fir_block_dump(func, blk, fp);
+    }
 }
