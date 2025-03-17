@@ -18,7 +18,6 @@ fir_Arena fir_arena_init(size_t page_size);
 
 void fir_arena_deinit(fir_Arena *arena);
 
-__result_use_check
 void *fir_arena_alloc(fir_Arena *arena, size_t size);
 
 typedef struct {

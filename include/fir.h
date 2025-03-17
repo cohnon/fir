@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 typedef struct fir_Module fir_Module;
+typedef struct fir_Block fir_Block;
 
 // String
 typedef uint32_t fir_StringID;
@@ -42,8 +43,7 @@ struct fir_Module {
 
     fir_Arena arena;
     fir_StringTable string_table;
-
-    fir_Array funcs;
+    fir_Array funcs; // fir_Function *
 };
 
 fir_Module fir_module_init(const char *name);
@@ -52,26 +52,36 @@ void fir_module_deinit(fir_Module *module);
 void fir_module_dump(fir_Module *module, FILE *fp);
 
 // Function
-typedef struct {
-    fir_Type type;
-    uint32_t flags;
-} fir_Arg;
-
 typedef struct fir_Function {
     fir_Module *module;
 
     fir_StringID name;
+    fir_Array blocks; // fir_Block *
 
-    fir_Array input;
-    fir_Array output;
+    fir_Array inputs;  // fir_Type
+    fir_Array outputs; // fir_Type
 } fir_Function;
 
 fir_Function *fir_func_create(fir_Module *module, const char *name);
+void fir_func_destroy(fir_Function *func);
+
+fir_Block *fir_func_get_entry(fir_Function *func);
 
 void fir_func_add_input(fir_Function *func, fir_Type type);
 void fir_func_add_output(fir_Function *func, fir_Type type);
 
 void fir_func_dump(fir_Function *func, FILE *fp);
 
+// Block
+struct fir_Block {
+    fir_StringID name;
+
+    fir_Array inputs; // fir_Type
+};
+
+fir_Block *fir_block_create(fir_Function *func, const char *name);
+void fir_block_destroy(fir_Block *block);
+
+void fir_block_add_input(fir_Block *block, fir_Type type);
 
 #endif

@@ -19,7 +19,12 @@ fir_Module fir_module_init(const char *name) {
 }
 
 void fir_module_deinit(fir_Module *module) {
+
+    for (size_t i = 0; i < module->funcs.len; i++) {
+        fir_func_destroy(*fir_array_get(fir_Function *, &module->funcs, i));
+    }
     fir_array_deinit(&module->funcs);
+
     fir_array_deinit(&module->string_table);
 
     fir_arena_deinit(&module->arena);

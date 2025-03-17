@@ -14,18 +14,19 @@ bool test_function(bool dump) {
 
     assert(module.funcs.len == 1);
     assert(strcmp(name_str, NAME) == 0);
+    assert(func->blocks.len == 1);
 
     fir_func_add_input(func, fir_type_int(32));
     fir_func_add_input(func, fir_type_int(16));
     fir_func_add_output(func, fir_type_int(8));
-    fir_func_add_output(func, fir_type_int(3));
+    fir_func_add_output(func, fir_type_int(4));
 
-    assert(func->input.len == 2);
-    assert(func->output.len == 2);
+    assert(func->outputs.len == 2);
+    assert(func->inputs.len == 2);
 
     // dump
     char *expected =
-        "@" NAME " : (i32, i16) -> (i8, i3)\n";
+        "@" NAME " (i32, i16) -> (i8, i4)\n";
 
     char buffer[128] = {0};
     FILE *fp = fmemopen(buffer, sizeof(buffer), "w+");
