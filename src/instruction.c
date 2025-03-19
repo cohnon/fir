@@ -4,60 +4,87 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-static fir_Instruction *create_instr(
+static fir_Instr *create_instr(
     fir_Block *block,
-    enum fir_Instruction kind,
-    fir_Type type
+    fir_InstrKind kind,
+    fir_DataType type
 ) {
     fir_Module *module = block->func->module;
-    fir_Instruction *instr = fir_arena_alloc(&module->arena, sizeof(fir_Instruction));
+    fir_Instr *instr = fir_arena_alloc(&module->arena, sizeof(fir_Instr));
     instr->kind = kind;
     instr->type = type;
 
-    fir_array_append(fir_Instruction *, &block->instrs, instr);
+    fir_array_append(fir_Instr *, &block->instrs, instr);
 
     return instr;
 }
 
-void fir_instr_lit_int(
+fir_Instr *fir_instr_lit_int(
     fir_Block *block,
-    fir_Type type,
+    fir_DataType type,
     uint64_t val,
     bool is_signed
 ) {
     assert(block != NULL);
+    assert(type.kind == FIR_TYPE_INT);
 
-    fir_Instruction *instr = create_instr(block, FIR_INSTR_LIT, type);
+    fir_Instr *instr = create_instr(block, FIR_INSTR_LIT, type);
     instr->_.lit.i.val = val;
     instr->_.lit.i.is_signed = is_signed;
+
+    return instr;
 }
 
-void fir_instr_add(
+fir_Instr *fir_instr_lit_float(
     fir_Block *block,
-    fir_Type type,
-    fir_Instruction *lhs,
-    fir_Instruction *rhs
+    fir_DataType type,
+    double val
+) {
+    assert(block != NULL);
+    assert(type.kind == FIR_TYPE_FLOAT);
+
+    fir_Instr *instr = create_instr(block, FIR_INSTR_LIT, type);
+    instr->_.lit.f = val;
+
+    return instr;
+}
+
+fir_Instr *fir_instr_arg(fir_Block *block, size_t idx) {
+    assert(block != NULL);
+    assert(idx < block->inputs.len);
+
+    fir_DataType type = *fir_array_get(fir_DataType, &block->inputs, idx);
+    fir_Instr *instr = create_instr(block, FIR_INSTR_ARG, type);
+    instr->_.arg = idx;
+
+    return instr;
+}
+
+fir_Instr *fir_instr_add(
+    fir_Block *block,
+    fir_DataType type,
+    fir_Instr *lhs,
+    fir_Instr *rhs
 ) {
     assert(block != NULL);
     assert(lhs != NULL);
     assert(rhs != NULL);
+    assert(fir_type_eq(lhs->type, rhs->type));
 
-    fir_Instruction *instr = create_instr(block, FIR_INSTR_ADD, type);
+    fir_Instr *instr = create_instr(block, FIR_INSTR_ADD, type);
     instr->_.args[0] = lhs;
     instr->_.args[1] = rhs;
+
+    return instr;
 }
 
-void fir_instr_dump(fir_Block *block, fir_Instruction *instr, FILE *fp) {
-    assert(block != NULL);
+void fir_instr_dump(fir_Instr *instr, FILE *fp) {
     assert(instr != NULL);
     assert(fp != NULL);
 
-    fir_Module *module = block->func->module;
-
     switch (instr->kind) {
     case FIR_INSTR_LIT:
-        fprintf(fp, "lit.");
-        fir_type_dump(instr->type, fp);
+        fprintf(fp, "lit");
         switch (instr->type.kind) {
         case FIR_TYPE_INT:
             fprintf(
@@ -74,13 +101,17 @@ void fir_instr_dump(fir_Block *block, fir_Instruction *instr, FILE *fp) {
         }
         break;
 
-    case FIR_INSTR_ADD: {
-        const char *lhs_name = fir_string_get(module, instr->_.args[0]->name);
-        const char *rhs_name = fir_string_get(module, instr->_.args[1]->name);
+    case FIR_INSTR_ARG:
+        fprintf(fp, "arg");
+        fprintf(fp, " %zu", instr->_.arg);
+        break;
 
-        fprintf(fp, "add.");
-        fir_type_dump(instr->type, fp);
-        fprintf(fp, " %s, %s", lhs_name, rhs_name);
+    case FIR_INSTR_ADD: {
+        fir_Instr *lhs = instr->_.args[0];
+        fir_Instr *rhs = instr->_.args[1];
+
+        fprintf(fp, "add");
+        fprintf(fp, " R%d, R%d", lhs->idx, rhs->idx);
         break;
     }
     default:

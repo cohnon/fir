@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-typedef struct fir_s_Module fir_Module;
-typedef struct fir_s_Block fir_Block;
+typedef struct fir_Module fir_Module;
+typedef struct fir_Block fir_Block;
 
 // String
 typedef uint32_t fir_StringID;
@@ -21,26 +21,29 @@ fir_StringID fir_string_add(fir_Module *module, const char *c_str);
 char *fir_string_get(fir_Module *module, fir_StringID string);
 
 // Type
-enum fir_Type {
+typedef enum {
     FIR_TYPE_INT,
     FIR_TYPE_FLOAT,
     FIR_TYPE_PTR,
-};
+} fir_DataTypeKind;
 
-typedef struct fir_s_Type {
-    enum fir_Type kind : 4;
+typedef struct fir_DataType {
+    fir_DataTypeKind kind : 4;
     uint16_t bits : 12;
-} fir_Type;
+} fir_DataType;
 
-fir_Type fir_type_int(size_t bits);
+bool fir_type_eq(fir_DataType a, fir_DataType b);
 
-void fir_type_dump(fir_Type type, FILE *fp);
+fir_DataType fir_type_int(size_t bits);
+fir_DataType fir_type_float(size_t bits);
+
+void fir_type_dump(fir_DataType type, FILE *fp);
 
 
 // Module
 #define FIR_MODULE_NAME_MAX_LEN 127
 
-struct fir_s_Module {
+struct fir_Module {
     char name[FIR_MODULE_NAME_MAX_LEN + 1];
 
     fir_Arena arena;
@@ -54,14 +57,14 @@ void fir_module_deinit(fir_Module *module);
 void fir_module_dump(fir_Module *module, FILE *fp);
 
 // Function
-typedef struct fir_s_Function {
+typedef struct fir_Function {
     fir_Module *module;
 
     fir_StringID name;
     fir_Array blocks; // fir_Block *
 
-    fir_Array inputs;  // fir_Type
-    fir_Array outputs; // fir_Type
+    fir_Array inputs;  // fir_DataType
+    fir_Array outputs; // fir_DataType
 } fir_Function;
 
 fir_Function *fir_func_create(fir_Module *module, const char *name);
@@ -69,32 +72,33 @@ void fir_func_destroy(fir_Function *func);
 
 fir_Block *fir_func_get_entry(fir_Function *func);
 
-void fir_func_add_input(fir_Function *func, fir_Type type);
-void fir_func_add_output(fir_Function *func, fir_Type type);
+void fir_func_add_input(fir_Function *func, fir_DataType type);
+void fir_func_add_output(fir_Function *func, fir_DataType type);
 
 void fir_func_dump(fir_Function *func, FILE *fp);
 
 // Block
-struct fir_s_Block {
+struct fir_Block {
     fir_Function *func;
 
     fir_StringID name;
 
-    fir_Array inputs; // fir_Type
-    fir_Array instrs; // fir_Instruction *
+    fir_Array inputs; // fir_DataType
+    fir_Array instrs; // fir_Instr *
 };
 
 fir_Block *fir_block_create(fir_Function *func, const char *name);
 void fir_block_destroy(fir_Block *block);
 
-void fir_block_add_input(fir_Block *block, fir_Type type);
+void fir_block_add_input(fir_Block *block, fir_DataType type);
 
 void fir_block_dump(fir_Function *func, fir_Block *block, FILE *fp);
 
 // Instruction
-enum fir_Instruction {
+typedef enum {
     FIR_INSTR_NOP,
 
+    // values
     FIR_INSTR_LIT,
     FIR_INSTR_ARG,
 
@@ -116,23 +120,22 @@ enum fir_Instruction {
     FIR_INSTR_EQL,
     FIR_INSTR_NEQ,
 
-    // terminals
+    // terminators
     FIR_INSTR_JMP,
     FIR_INSTR_IF,
     FIR_INSTR_RET,
     FIR_INSTR_CALL,
-};
+} fir_InstrKind;
 
-typedef struct fir_s_Instruction fir_Instruction;
-struct fir_s_Instruction {
-    enum fir_Instruction kind;
-    fir_Type type;
+typedef struct fir_Instr fir_Instr;
+struct fir_Instr {
+    fir_InstrKind kind;
+    fir_DataType type;
 
-    fir_StringID name;
     size_t idx : 32;
 
     union {
-        fir_Instruction *args[2];
+        fir_Instr *args[2];
         union {
             double f;
             struct {
@@ -140,23 +143,32 @@ struct fir_s_Instruction {
                 bool is_signed;
             } i;
         } lit;
+        size_t arg;
     } _;
 };
 
-void fir_instr_lit_int(
+fir_Instr *fir_instr_lit_int(
     fir_Block *block,
-    fir_Type type,
+    fir_DataType type,
     uint64_t val,
     bool is_signed
 );
 
-void fir_instr_add(
+fir_Instr *fir_instr_lit_float(
     fir_Block *block,
-    fir_Type type,
-    fir_Instruction *lhs,
-    fir_Instruction *rhs
+    fir_DataType type,
+    double val
 );
 
-void fir_instr_dump(fir_Block *block, fir_Instruction *instr, FILE *fp);
+fir_Instr *fir_instr_arg(fir_Block *block, size_t idx);
+
+fir_Instr *fir_instr_add(
+    fir_Block *block,
+    fir_DataType type,
+    fir_Instr *lhs,
+    fir_Instr *rhs
+);
+
+void fir_instr_dump(fir_Instr *instr, FILE *fp);
 
 #endif

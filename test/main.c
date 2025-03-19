@@ -11,6 +11,7 @@ void test_array(void);
 void test_string(void);
 void test_function(bool dump);
 void test_block(bool dump);
+void test_instr(bool dump);
 
 #define BREAK_ON_ERR if (get_error_count() > 0) {\
     fprintf(stderr, "[%ld test(s) failed]\n", get_error_count());\
@@ -44,6 +45,11 @@ int main(void) {
 
     print_header("block");
     test_block(true);
+
+    BREAK_ON_ERR
+
+    print_header("instruction");
+    test_instr(true);
 
     BREAK_ON_ERR
 

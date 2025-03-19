@@ -33,7 +33,7 @@ void test_function(bool dump) {
     fir_func_dump(func, fp);
 
     char *got = file_to_string(fp);
-    expect_string("dump matches", expected, got);
+    expect_string("matching output", expected, got);
     free(got);
 
     if (get_error_count() == 0 && dump) {

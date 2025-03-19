@@ -61,7 +61,7 @@ void fir_array_append_untyped(fir_Array *array, size_t elem_size, void *elem) {
 
     array->len += 1;
 }
-
+#include <stdio.h>
 void *fir_array_get_untyped(fir_Array *array, size_t elem_size, size_t idx) {
     assert(array != NULL);
     assert(elem_size > 0);
