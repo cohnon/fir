@@ -8,8 +8,8 @@ fir_Function *fir_func_create(fir_Module *module, const char *name) {
     func->blocks = fir_array_init(fir_Block *, 8);
     fir_block_create(func, "entry");
 
-    func->inputs = fir_array_init(fir_DataType, 8);
-    func->outputs = fir_array_init(fir_DataType, 1);
+    func->input = fir_array_init(fir_DataType, 8);
+    func->output = fir_array_init(fir_DataType, 1);
 
 
     fir_array_append(fir_Function *, &module->funcs, func);
@@ -24,8 +24,8 @@ void fir_func_destroy(fir_Function *func) {
 
     fir_array_deinit(&func->blocks);
 
-    fir_array_deinit(&func->inputs);
-    fir_array_deinit(&func->outputs);
+    fir_array_deinit(&func->input);
+    fir_array_deinit(&func->output);
 }
 
 fir_Block *fir_func_get_entry(fir_Function *func) {
@@ -33,13 +33,13 @@ fir_Block *fir_func_get_entry(fir_Function *func) {
 }
 
 void fir_func_add_input(fir_Function *func, fir_DataType type) {
-    fir_array_append(fir_DataType, &func->inputs, type);
+    fir_array_append(fir_DataType, &func->input, type);
 
     fir_block_add_input(fir_func_get_entry(func), type);
 }
 
 void fir_func_add_output(fir_Function *func, fir_DataType type) {
-    fir_array_append(fir_DataType, &func->outputs, type);
+    fir_array_append(fir_DataType, &func->output, type);
 }
 
 static void set_instr_idx(fir_Function *func) {
@@ -60,11 +60,11 @@ void fir_func_dump(fir_Function *func, FILE *fp) {
     fprintf(fp, "@%s (", name_str);
 
     // input
-    for (size_t i = 0; i < func->inputs.len; i++) {
-        fir_DataType in = *fir_array_get(fir_DataType, &func->inputs, i);
+    for (size_t i = 0; i < func->input.len; i++) {
+        fir_DataType in = *fir_array_get(fir_DataType, &func->input, i);
         fir_type_dump(in, fp);
 
-        if (i < func->inputs.len - 1) {
+        if (i < func->input.len - 1) {
             fprintf(fp, ", ");
         }
     }
@@ -72,11 +72,11 @@ void fir_func_dump(fir_Function *func, FILE *fp) {
     fprintf(fp, ") -> (");
 
     // output
-    for (size_t i = 0; i < func->outputs.len; i++) {
-        fir_DataType out = *fir_array_get(fir_DataType, &func->outputs, i);
+    for (size_t i = 0; i < func->output.len; i++) {
+        fir_DataType out = *fir_array_get(fir_DataType, &func->output, i);
         fir_type_dump(out, fp);
 
-        if (i < func->outputs.len - 1) {
+        if (i < func->output.len - 1) {
             fprintf(fp, ", ");
         }
     }

@@ -22,8 +22,8 @@ void test_function(bool dump) {
     fir_func_add_output(func, fir_type_int(8));
     fir_func_add_output(func, fir_type_int(4));
 
-    expect_int("outputs set", 2, func->outputs.len);
-    expect_int("inputs set", 2, func->inputs.len);
+    expect_int("output set", 2, func->output.len);
+    expect_int("input set", 2, func->input.len);
 
     // dump
     char *expected =

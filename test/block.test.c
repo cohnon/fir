@@ -16,13 +16,16 @@ void test_block(bool dump) {
     fir_Block *entry = fir_func_get_entry(func);
 
     expect_ptr("func ref set", func, entry->func);
-    expect_int("inputs set", 2, entry->inputs.len);
+    expect_int("inputs set", 2, entry->input.len);
 
-    fir_instr_lit_int(entry, fir_type_int(32), 100, false);
+    fir_instr_lit_int(entry, fir_type_int(32), 100);
 
     fir_Block *blk1 = fir_block_create(func, "block1");
 
-    fir_instr_lit_int(blk1, fir_type_int(32), 50, true);
+    fir_instr_lit_int(blk1, fir_type_int(32), -50);
+
+    expect_int("entry instruction count", 1, entry->instrs.len);
+    expect_int("blk1 instruction count", 1, blk1->instrs.len);
 
     // dump
     char *expected =
