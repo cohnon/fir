@@ -158,6 +158,11 @@ typedef struct fir_InstrCall {
     fir_Instr *args[];
 } fir_InstrCall;
 
+typedef struct fir_InstrProj {
+    fir_Instr *instr;
+    size_t idx;
+} fir_InstrProj;
+
 bool fir_instr_is_terminator(fir_Instr *instr);
 
 fir_Instr *fir_instr_lit_int(

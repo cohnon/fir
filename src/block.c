@@ -81,7 +81,7 @@ void fir_block_dump(fir_Function *func, fir_Block *block, FILE *fp) {
                 }
 
                 fprintf(fp, ") R%d = ", instr->idx);
-            } else if (!fir_instr_is_terminator(instr) && !fir_type_is_void(instr->type)) {
+            } else if (!fir_instr_is_terminator(instr)) {
                 fir_type_dump(instr->type, fp);
                 fprintf(fp, " R%d = ", instr->idx);
             }

@@ -124,10 +124,10 @@ static fir_Function *create_add_func(fir_Module *module) {
     return func;
 }
 
-void test_instr(bool dump) {
-    fir_Module module = fir_module_init("instr_test");
+void test_module(void) {
+    fir_Module module = fir_module_init("test");
 
-    fir_Function *func = fir_func_create(&module, "test_instr");
+    fir_Function *func = fir_func_create(&module, "test");
     fir_Block *entry = fir_func_get_entry(func);
 
     fir_Instr *a_i32 = fir_instr_lit_int(entry, fir_type_int(32), 10);
@@ -138,42 +138,46 @@ void test_instr(bool dump) {
 
     // @arithmetic
     fir_Function *arithmetic_func = create_arithmetic_func(&module);
-    fir_Instr *arithmetic_call = fir_instr_call(entry, arithmetic_func);
-    fir_instr_call_arg(arithmetic_call, a_i32);
-    fir_instr_call_arg(arithmetic_call, b_i32);
-    fir_instr_call_arg(arithmetic_call, c_f32);
-    fir_instr_call_arg(arithmetic_call, d_f32);
-
-    
-    // @add
-    fir_Function *add_func = create_add_func(&module);
-    fir_Instr *add_call = fir_instr_call(entry, add_func);
-    fir_instr_call_arg(add_call, c_f32);
-    fir_instr_call_arg(add_call, d_f32);
+    fir_Instr *call0 = fir_instr_call(entry, arithmetic_func);
+    fir_instr_call_arg(call0, a_i32);
+    fir_instr_call_arg(call0, b_i32);
+    fir_instr_call_arg(call0, c_f32);
+    fir_instr_call_arg(call0, d_f32);
 
     
     // @tuple_ret
     fir_Function *tuple_ret_func = create_tuple_ret_func(&module);
-    fir_Instr *tuple_ret_call = fir_instr_call(entry, tuple_ret_func);
-    fir_instr_call_arg(tuple_ret_call, c_f32);
-    fir_instr_call_arg(tuple_ret_call, d_f32);
+    fir_Instr *call1 = fir_instr_call(entry, tuple_ret_func);
+    fir_instr_call_arg(call1, c_f32);
+    fir_instr_call_arg(call1, d_f32);
+
+    fir_Instr *proj0 = fir_instr_proj(entry, call1, 0);
+    fir_Instr *proj1 = fir_instr_proj(entry, call1, 1);
+
+
+    // @add
+    fir_Function *add_func = create_add_func(&module);
+    fir_Instr *add_call = fir_instr_call(entry, add_func);
+    fir_instr_call_arg(add_call, proj0);
+    fir_instr_call_arg(add_call, proj1);
+
 
     fir_instr_ret(entry);
 
     char *expected =
-        "@test_instr () -> ()\n"
+        "@test () -> ()\n"
         "  i32 R0 = lit 10\n"
         "  i32 R1 = lit -10\n"
         "  f32 R2 = lit 10\n"
         "  f32 R3 = lit -10\n"
 
-        "  call @arithmetic R0, R1, R2, R3\n"
+        "  i0 R4 = call @arithmetic R0, R1, R2, R3\n"
 
-        "  f32 R5 = call @add R2, R3\n"
+        "  (f32, f32) R5 = call @tuple_ret R2, R3\n"
+        "  f32 R6 = proj R5 0\n"
+        "  f32 R7 = proj R5 1\n"
 
-        "  (f32, f32) R6 = call @tuple_ret R2, R3\n"
-        // "  f32 R7 = field R6 0\n"
-        // "  f32 R8 = field R6 1\n"
+        "  f32 R8 = call @add R6, R7\n"
 
         "  ret\n"
     ;
@@ -182,10 +186,10 @@ void test_instr(bool dump) {
     fir_func_dump(func, fp);
 
     char *got = file_to_string(fp);
-    expect_string("@test_instr", expected, got);
+    expect_string("@test", expected, got);
     free(got);
 
-    if (get_error_count() == 0 && dump) {
+    if (get_error_count() == 0) {
         fir_module_dump(&module, stdout);
         printf("\n");
     }

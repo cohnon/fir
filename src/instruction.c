@@ -206,7 +206,17 @@ fir_Instr *fir_instr_proj(fir_Block *block, fir_Instr *tuple, size_t idx) {
     assert(idx < tuple->type.data);
     assert(tuple->kind == FIR_INSTR_CALL);
 
-    return NULL;
+    fir_InstrCall *call = (fir_InstrCall *)tuple->data;
+    fir_DataType type = *fir_array_get(fir_DataType, &call->func->output, idx);
+    size_t instr_size = sizeof(fir_Instr) + sizeof(fir_InstrProj);
+
+    fir_Instr *instr = create_instr(block, FIR_INSTR_PROJ, type, instr_size);
+
+    fir_InstrProj *proj = (fir_InstrProj *)instr->data;
+    proj->instr = tuple;
+    proj->idx = idx;
+
+    return instr;
 }
 
 void fir_instr_dump(fir_Instr *instr, FILE *fp) {
@@ -293,6 +303,11 @@ void fir_instr_dump(fir_Instr *instr, FILE *fp) {
                 }
             }
         }
+        break;
+    }
+    case FIR_INSTR_PROJ: {
+        fir_InstrProj *proj = (fir_InstrProj *)instr->data;
+        fprintf(fp, "proj R%d %zu", proj->instr->idx, proj->idx);
         break;
     }
     default:
