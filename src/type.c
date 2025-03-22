@@ -29,6 +29,14 @@ fir_DataType fir_type_float(size_t data) {
     return type;
 }
 
+fir_DataType fir_type_ptr(void) {
+    fir_DataType type;
+    type.kind = FIR_TYPE_PTR;
+    type.data = 64;
+
+    return type;
+}
+
 fir_DataType fir_type_tuple(size_t n) {
     fir_DataType type;
     type.kind = FIR_TYPE_TUPLE;
@@ -48,6 +56,9 @@ void fir_type_dump(fir_DataType type, FILE *fp) {
         break;
     case FIR_TYPE_FLOAT:
         fprintf(fp, "f%d", type.data);
+        break;
+    case FIR_TYPE_PTR:
+        fprintf(fp, "ptr");
         break;
     default:
         fprintf(fp, "<unhandled type>");

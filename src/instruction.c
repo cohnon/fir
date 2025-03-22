@@ -22,23 +22,54 @@ static fir_Instr *create_instr(
     return instr;
 }
 
-static fir_Instr *create_3addr_instr(
-    fir_Block *block, fir_InstrKind kind, fir_Instr *arg0, fir_Instr *arg1
+static fir_Instr *create_instr1(
+    fir_Block *block,
+    fir_InstrKind kind,
+    fir_DataType type,
+    fir_Instr *arg
+) {
+    assert(block != NULL);
+    assert(arg != NULL);
+
+    size_t instr_size = sizeof(fir_Instr) + sizeof(fir_Instr *);
+
+    fir_Instr *instr = create_instr(block, kind, type, instr_size);
+
+    fir_Instr **args = (fir_Instr **)instr->data;
+    args[0] = arg;
+
+    return instr;
+}
+
+
+static fir_Instr *create_instr2(
+    fir_Block *block,
+    fir_InstrKind kind,
+    fir_DataType type,
+    fir_Instr *arg0,
+    fir_Instr *arg1
 ) {
     assert(block != NULL);
     assert(arg0 != NULL);
     assert(arg1 != NULL);
-    assert(fir_type_eq(arg0->type, arg1->type));
 
     size_t instr_size = sizeof(fir_Instr) + (2 * sizeof(fir_Instr *));
 
-    fir_Instr *instr = create_instr(block, kind, arg0->type, instr_size);
+    fir_Instr *instr = create_instr(block, kind, type, instr_size);
 
     fir_Instr **args = (fir_Instr **)instr->data;
     args[0] = arg0;
     args[1] = arg1;
 
     return instr;
+}
+
+static fir_Instr *create_op_instr(
+    fir_Block *block, fir_InstrKind kind, fir_Instr *arg0, fir_Instr *arg1
+) {
+    assert(fir_type_eq(arg0->type, arg1->type));
+
+    return create_instr2(block, kind, arg0->type, arg0, arg1);
 }
 
 static fir_Instr *create_lit_instr(fir_Block *block, fir_DataType type) {
@@ -96,15 +127,43 @@ fir_Instr *fir_instr_arg(fir_Block *block, size_t idx) {
 }
 
 fir_Instr *fir_instr_add(fir_Block *block, fir_Instr *lhs, fir_Instr *rhs) {
-    return create_3addr_instr(block, FIR_INSTR_ADD, lhs, rhs);
+    return create_op_instr(block, FIR_INSTR_ADD, lhs, rhs);
 }
 
 fir_Instr *fir_instr_sub(fir_Block *block, fir_Instr *lhs, fir_Instr *rhs) {
-    return create_3addr_instr(block, FIR_INSTR_SUB, lhs, rhs);
+    return create_op_instr(block, FIR_INSTR_SUB, lhs, rhs);
 }
 
 fir_Instr *fir_instr_mul(fir_Block *block, fir_Instr *lhs, fir_Instr *rhs) {
-    return create_3addr_instr(block, FIR_INSTR_MUL, lhs, rhs);
+    return create_op_instr(block, FIR_INSTR_MUL, lhs, rhs);
+}
+
+fir_Instr *fir_instr_stack(fir_Block *block, fir_Instr *size) {
+    assert(size != NULL);
+    assert(size->type.kind == FIR_TYPE_INT);
+
+    return create_instr1(block, FIR_INSTR_STACK, fir_type_ptr(), size);
+}
+
+fir_Instr *fir_instr_offset(fir_Block *block, fir_Instr *ptr, fir_Instr *by) {
+    assert(ptr != NULL);
+    assert(ptr->type.kind == FIR_TYPE_PTR);
+
+    return create_instr2(block, FIR_INSTR_OFFSET, fir_type_ptr(), ptr, by);
+}
+
+void fir_instr_write(fir_Block *block, fir_Instr *to, fir_Instr *from) {
+    assert(to != NULL);
+    assert(to->type.kind == FIR_TYPE_PTR);
+
+    create_instr2(block, FIR_INSTR_WRITE, fir_type_void(), to, from);
+}
+
+fir_Instr *fir_instr_read(fir_Block *block, fir_DataType type, fir_Instr *from) {
+    assert(from != NULL);
+    assert(from->type.kind == FIR_TYPE_PTR);
+
+    return create_instr1(block, FIR_INSTR_READ, type, from);
 }
 
 fir_Instr *fir_instr_ret(fir_Block *block) {
@@ -192,6 +251,9 @@ void fir_instr_call_arg(fir_Instr *instr, fir_Instr *arg) {
     size_t i = 0;
     for (; i < call->func->input.len; i++) {
         if (args[i] == NULL) {
+            fir_DataType type = *fir_array_get(fir_DataType, &call->func->input, i);
+            assert(fir_type_eq(arg->type, type));
+
             args[i] = arg;
             break;
         }
@@ -253,6 +315,30 @@ void fir_instr_dump(fir_Instr *instr, FILE *fp) {
 
         fprintf(fp, "add");
         fprintf(fp, " R%d, R%d", args[0]->idx, args[1]->idx);
+        break;
+    }
+    case FIR_INSTR_STACK: {
+        fir_Instr **args = (fir_Instr **)instr->data;
+        
+        fprintf(fp, "stack R%d", args[0]->idx);
+        break;
+    }
+    case FIR_INSTR_OFFSET: {
+        fir_Instr **args = (fir_Instr **)instr->data;
+
+        fprintf(fp, "offset R%d, R%d", args[0]->idx, args[1]->idx);
+        break;
+    }
+    case FIR_INSTR_WRITE: {
+        fir_Instr **args = (fir_Instr **)instr->data;
+
+        fprintf(fp, "write R%d, R%d", args[0]->idx, args[1]->idx);
+        break;
+    }
+    case FIR_INSTR_READ: {
+        fir_Instr **args = (fir_Instr **)instr->data;
+
+        fprintf(fp, "read R%d", args[0]->idx);
         break;
     }
     case FIR_INSTR_SUB: {

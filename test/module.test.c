@@ -124,6 +124,56 @@ static fir_Function *create_add_func(fir_Module *module) {
     return func;
 }
 
+static fir_Function *create_stack_func(fir_Module *module) {
+    char *expected =
+        "@stack () -> ()\n"
+        "  i32 R0 = lit 128\n"
+        "  ptr R1 = stack R0\n"
+        "  i32 R2 = lit 4\n"
+        "  ptr R3 = offset R1, R2\n"
+
+        "  f32 R4 = lit 42\n"
+        "  i0 R5 = write R1, R4\n"
+
+        "  i32 R6 = lit -42\n"
+        "  i0 R7 = write R3, R6\n"
+
+        "  f32 R8 = read R1\n"
+        "  i32 R9 = read R3\n"
+        
+        "  ret\n"
+    ;
+
+    fir_Function *func = fir_func_create(module, "stack");
+
+    fir_Block *entry = fir_func_get_entry(func);
+
+    fir_Instr *r0 = fir_instr_lit_int(entry, fir_type_int(32), 128);
+    fir_Instr *stk0 = fir_instr_stack(entry, r0);
+    fir_Instr *r2 = fir_instr_lit_int(entry, fir_type_int(32), 4);
+    fir_Instr *stk1 = fir_instr_offset(entry, stk0, r2);
+
+    fir_Instr *a = fir_instr_lit_float(entry, fir_type_float(32), 42);
+    fir_instr_write(entry, stk0, a);
+
+    fir_Instr *b = fir_instr_lit_int(entry, fir_type_int(32), -42);
+    fir_instr_write(entry, stk1, b);
+
+    fir_instr_read(entry, fir_type_float(32), stk0);
+    fir_instr_read(entry, fir_type_int(32), stk1);
+
+    fir_instr_ret(entry);
+
+    FILE *fp = tmpfile();
+    fir_func_dump(func, fp);
+
+    char *got = file_to_string(fp);
+    expect_string("@stack", expected, got);
+    free(got);
+
+    return func;
+}
+
 void test_module(void) {
     fir_Module module = fir_module_init("test");
 
@@ -161,6 +211,11 @@ void test_module(void) {
     fir_instr_call_arg(add_call, proj0);
     fir_instr_call_arg(add_call, proj1);
 
+    
+    // @stack
+    fir_Function *stack_func = create_stack_func(&module);
+    fir_instr_call(entry, stack_func);
+
 
     fir_instr_ret(entry);
 
@@ -178,6 +233,8 @@ void test_module(void) {
         "  f32 R7 = proj R5 1\n"
 
         "  f32 R8 = call @add R6, R7\n"
+
+        "  i0 R9 = call @stack\n"
 
         "  ret\n"
     ;

@@ -39,6 +39,7 @@ bool fir_type_eq(fir_DataType a, fir_DataType b);
 fir_DataType fir_type_void(void);
 fir_DataType fir_type_int(size_t bits);
 fir_DataType fir_type_float(size_t bits);
+fir_DataType fir_type_ptr(void);
 fir_DataType fir_type_tuple(size_t n);
 
 bool fir_type_is_void(fir_DataType type);
@@ -113,16 +114,20 @@ typedef enum {
     FIR_INSTR_ADD,
     FIR_INSTR_SUB,
     FIR_INSTR_MUL,
-    FIR_INSTR_IDIV,
-    FIR_INSTR_UDIV,
-    FIR_INSTR_FDIV,
+    FIR_INSTR_DIV,
+    FIR_INSTR_SDIV,
 
     FIR_INSTR_SHL,
     FIR_INSTR_SHR,
 
-
     FIR_INSTR_EQL,
     FIR_INSTR_NEQ,
+
+    // memory
+    FIR_INSTR_STACK,
+    FIR_INSTR_OFFSET,
+    FIR_INSTR_WRITE,
+    FIR_INSTR_READ,
 
     // terminators
     FIR_INSTR_JMP,
@@ -182,6 +187,11 @@ fir_Instr *fir_instr_arg(fir_Block *block, size_t idx);
 fir_Instr *fir_instr_add(fir_Block *block, fir_Instr *lhs, fir_Instr *rhs);
 fir_Instr *fir_instr_sub(fir_Block *block, fir_Instr *lhs, fir_Instr *rhs);
 fir_Instr *fir_instr_mul(fir_Block *block, fir_Instr *lhs, fir_Instr *rhs);
+
+fir_Instr *fir_instr_stack(fir_Block *block, fir_Instr *size);
+fir_Instr *fir_instr_offset(fir_Block *block, fir_Instr *ptr, fir_Instr *by);
+void fir_instr_write(fir_Block *block, fir_Instr *to, fir_Instr *from);
+fir_Instr *fir_instr_read(fir_Block *block, fir_DataType type, fir_Instr *from);
 
 fir_Instr *fir_instr_ret(fir_Block *block);
 void fir_instr_ret_arg(fir_Instr *ret, fir_Instr *val);
