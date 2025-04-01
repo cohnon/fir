@@ -63,6 +63,7 @@ void fir_func_dump(fir_Function *func, FILE *fp) {
     for (size_t i = 0; i < func->input.len; i++) {
         fir_DataType in = *fir_array_get(fir_DataType, &func->input, i);
         fir_type_dump(in, fp);
+        fprintf(fp, " %%%zu", i);
 
         if (i < func->input.len - 1) {
             fprintf(fp, ", ");

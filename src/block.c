@@ -66,6 +66,9 @@ void fir_block_dump(fir_Function *func, fir_Block *block, FILE *fp) {
         for (size_t i = 0; i < block->instrs.len; i++) {
             fir_Instr *instr = *fir_array_get(fir_Instr *, &block->instrs, i);
 
+            // arg instructions are implicit
+            if (instr->kind == FIR_INSTR_ARG) { continue; }
+
             fprintf(fp, "  ");
 
             if (instr->type.kind == FIR_TYPE_TUPLE) {
@@ -80,10 +83,10 @@ void fir_block_dump(fir_Function *func, fir_Block *block, FILE *fp) {
                     }
                 }
 
-                fprintf(fp, ") R%d = ", instr->idx);
-            } else if (!fir_instr_is_terminator(instr)) {
+                fprintf(fp, ") %%%d = ", instr->idx);
+            } else if (!fir_instr_is_terminator(instr) && !fir_type_is_void(instr->type)) {
                 fir_type_dump(instr->type, fp);
-                fprintf(fp, " R%d = ", instr->idx);
+                fprintf(fp, " %%%d = ", instr->idx);
             }
 
             fir_instr_dump(instr, fp);

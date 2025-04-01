@@ -7,19 +7,14 @@
 
 static fir_Function *create_arithmetic_func(fir_Module *module) {
     char *expected =
-        "@arithmetic (i32, i32, f32, f32) -> ()\n"
-        "  i32 R0 = arg 0\n"
-        "  i32 R1 = arg 1\n"
-        "  f32 R2 = arg 2\n"
-        "  f32 R3 = arg 3\n"
-
-        "  i32 R4 = add R0, R1\n"
-        "  i32 R5 = sub R0, R1\n"
-        "  i32 R6 = mul R0, R1\n"
+        "@arithmetic (i32 %0, i32 %1, f32 %2, f32 %3) -> ()\n"
+        "  i32 %4 = add %0, %1\n"
+        "  i32 %5 = sub %0, %1\n"
+        "  i32 %6 = mul %0, %1\n"
         
-        "  f32 R7 = add R2, R3\n"
-        "  f32 R8 = sub R2, R3\n"
-        "  f32 R9 = mul R2, R3\n"
+        "  f32 %7 = add %2, %3\n"
+        "  f32 %8 = sub %2, %3\n"
+        "  f32 %9 = mul %2, %3\n"
 
         "  ret\n"
     ;
@@ -59,10 +54,8 @@ static fir_Function *create_arithmetic_func(fir_Module *module) {
 
 static fir_Function *create_tuple_ret_func(fir_Module *module) {
     char *expected =
-        "@tuple_ret (f32, f32) -> (f32, f32)\n"
-        "  f32 R0 = arg 0\n"
-        "  f32 R1 = arg 1\n"
-        "  ret R0, R1\n"
+        "@tuple_ret (f32 %0, f32 %1) -> (f32, f32)\n"
+        "  ret %0, %1\n"
     ;
 
     fir_Function *func = fir_func_create(module, "tuple_ret");
@@ -92,11 +85,9 @@ static fir_Function *create_tuple_ret_func(fir_Module *module) {
 
 static fir_Function *create_add_func(fir_Module *module) {
     char *expected =
-        "@add (f32, f32) -> (f32)\n"
-        "  f32 R0 = arg 0\n"
-        "  f32 R1 = arg 1\n"
-        "  f32 R2 = add R0, R1\n"
-        "  ret R2\n"
+        "@add (f32 %0, f32 %1) -> (f32)\n"
+        "  f32 %2 = add %0, %1\n"
+        "  ret %2\n"
     ;
 
     fir_Function *func = fir_func_create(module, "add");
@@ -127,19 +118,19 @@ static fir_Function *create_add_func(fir_Module *module) {
 static fir_Function *create_stack_func(fir_Module *module) {
     char *expected =
         "@stack () -> ()\n"
-        "  i32 R0 = lit 128\n"
-        "  ptr R1 = stack R0\n"
-        "  i32 R2 = lit 4\n"
-        "  ptr R3 = offset R1, R2\n"
+        "  i32 %0 = lit 128\n"
+        "  ptr %1 = stack %0\n"
+        "  i32 %2 = lit 4\n"
+        "  ptr %3 = offset %1, %2\n"
 
-        "  f32 R4 = lit 42\n"
-        "  i0 R5 = write R1, R4\n"
+        "  f32 %4 = lit 42\n"
+        "  write %1, %4\n"
 
-        "  i32 R6 = lit -42\n"
-        "  i0 R7 = write R3, R6\n"
+        "  i32 %6 = lit -42\n"
+        "  write %3, %6\n"
 
-        "  f32 R8 = read R1\n"
-        "  i32 R9 = read R3\n"
+        "  f32 %8 = read %1\n"
+        "  i32 %9 = read %3\n"
         
         "  ret\n"
     ;
@@ -221,20 +212,20 @@ void test_module(void) {
 
     char *expected =
         "@test () -> ()\n"
-        "  i32 R0 = lit 10\n"
-        "  i32 R1 = lit -10\n"
-        "  f32 R2 = lit 10\n"
-        "  f32 R3 = lit -10\n"
+        "  i32 %0 = lit 10\n"
+        "  i32 %1 = lit -10\n"
+        "  f32 %2 = lit 10\n"
+        "  f32 %3 = lit -10\n"
 
-        "  i0 R4 = call @arithmetic R0, R1, R2, R3\n"
+        "  call @arithmetic %0, %1, %2, %3\n"
 
-        "  (f32, f32) R5 = call @tuple_ret R2, R3\n"
-        "  f32 R6 = proj R5 0\n"
-        "  f32 R7 = proj R5 1\n"
+        "  (f32, f32) %5 = call @tuple_ret %2, %3\n"
+        "  f32 %6 = proj %5 0\n"
+        "  f32 %7 = proj %5 1\n"
 
-        "  f32 R8 = call @add R6, R7\n"
+        "  f32 %8 = call @add %6, %7\n"
 
-        "  i0 R9 = call @stack\n"
+        "  call @stack\n"
 
         "  ret\n"
     ;

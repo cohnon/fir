@@ -305,54 +305,52 @@ void fir_instr_dump(fir_Instr *instr, FILE *fp) {
         break;
     }
     case FIR_INSTR_ARG: {
-        size_t *arg_idx = (size_t *)instr->data;
-        fprintf(fp, "arg");
-        fprintf(fp, " %zu", *arg_idx);
+        // arg instructions are implicit
         break;
     }
     case FIR_INSTR_ADD: {
         fir_Instr **args = (fir_Instr **)instr->data;
 
         fprintf(fp, "add");
-        fprintf(fp, " R%d, R%d", args[0]->idx, args[1]->idx);
+        fprintf(fp, " %%%d, %%%d", args[0]->idx, args[1]->idx);
         break;
     }
     case FIR_INSTR_STACK: {
         fir_Instr **args = (fir_Instr **)instr->data;
         
-        fprintf(fp, "stack R%d", args[0]->idx);
+        fprintf(fp, "stack %%%d", args[0]->idx);
         break;
     }
     case FIR_INSTR_OFFSET: {
         fir_Instr **args = (fir_Instr **)instr->data;
 
-        fprintf(fp, "offset R%d, R%d", args[0]->idx, args[1]->idx);
+        fprintf(fp, "offset %%%d, %%%d", args[0]->idx, args[1]->idx);
         break;
     }
     case FIR_INSTR_WRITE: {
         fir_Instr **args = (fir_Instr **)instr->data;
 
-        fprintf(fp, "write R%d, R%d", args[0]->idx, args[1]->idx);
+        fprintf(fp, "write %%%d, %%%d", args[0]->idx, args[1]->idx);
         break;
     }
     case FIR_INSTR_READ: {
         fir_Instr **args = (fir_Instr **)instr->data;
 
-        fprintf(fp, "read R%d", args[0]->idx);
+        fprintf(fp, "read %%%d", args[0]->idx);
         break;
     }
     case FIR_INSTR_SUB: {
         fir_Instr **args = (fir_Instr **)instr->data;
 
         fprintf(fp, "sub");
-        fprintf(fp, " R%d, R%d", args[0]->idx, args[1]->idx);
+        fprintf(fp, " %%%d, %%%d", args[0]->idx, args[1]->idx);
         break;
     }
     case FIR_INSTR_MUL: {
         fir_Instr **args = (fir_Instr **)instr->data;
 
         fprintf(fp, "mul");
-        fprintf(fp, " R%d, R%d", args[0]->idx, args[1]->idx);
+        fprintf(fp, " %%%d, %%%d", args[0]->idx, args[1]->idx);
         break;
     }
     case FIR_INSTR_RET: {
@@ -364,7 +362,7 @@ void fir_instr_dump(fir_Instr *instr, FILE *fp) {
 
             fprintf(fp, " ");
             for (size_t i = 0; i < ret->args_n; i++) {
-                fprintf(fp, "R%d", args[i]->idx);
+                fprintf(fp, "%%%d", args[i]->idx);
                 if (i < ret->args_n - 1) {
                     fprintf(fp, ", ");
                 }
@@ -382,7 +380,7 @@ void fir_instr_dump(fir_Instr *instr, FILE *fp) {
             fprintf(fp, " ");
             fir_Instr **args = (fir_Instr **)call->args;
             for (size_t i = 0; i < call->func->input.len; i++) {
-                fprintf(fp, "R%d", args[i]->idx);
+                fprintf(fp, "%%%d", args[i]->idx);
 
                 if (i < call->func->input.len - 1) {
                     fprintf(fp, ", ");
@@ -393,7 +391,7 @@ void fir_instr_dump(fir_Instr *instr, FILE *fp) {
     }
     case FIR_INSTR_PROJ: {
         fir_InstrProj *proj = (fir_InstrProj *)instr->data;
-        fprintf(fp, "proj R%d %zu", proj->instr->idx, proj->idx);
+        fprintf(fp, "proj %%%d %zu", proj->instr->idx, proj->idx);
         break;
     }
     default:
